@@ -240,7 +240,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
             const text =
               message.response?.output?.[0]?.content?.[0]?.transcript;
             if (text) {
-              setTranscript((prev) => [...prev, `AI Mechanic: ${text}`]);
+              setTranscript((prev) => [...prev, `AI: ${text}`]);
             }
           }
         } catch (error) {
@@ -294,7 +294,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     if (audioTrackRef.current) {
       audioTrackRef.current.enabled = false;
       setIsHoldingToSpeak(false);
-      
+
       // Manually trigger AI response after user stops speaking
       if (dataChannelRef.current) {
         dataChannelRef.current.send(
@@ -336,7 +336,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
               <div className="text-center">
                 <div className="w-20 h-20 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-6" />
                 <p className="text-white text-xl font-semibold">
-                  Connecting to AI Mechanic...
+                  Connecting to AI Mechanic
                 </p>
                 <p className="text-white/50 text-sm mt-2">
                   Setting up video and voice
@@ -349,7 +349,9 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
           {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 px-8">
               <div className="glass-card-premium rounded-3xl p-8 max-w-md text-center">
-                <div className="text-5xl mb-4">⚠️</div>
+                <svg className="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
                 <h3 className="text-xl font-semibold text-white mb-3">
                   Connection Error
                 </h3>
@@ -369,13 +371,15 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
           {!isConnecting && !error && (
             <>
-              {/* Top Bar - Issue & Status */}
-              <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/60 to-transparent">
-                <div className="flex items-start justify-between">
-                  {/* Issue Info */}
-                  <div className="glass-card-premium px-4 py-3 rounded-2xl">
-                    <p className="text-xs text-white/60 mb-1">Fixing</p>
-                    <p className="text-sm text-white font-semibold">
+              {/* Top Bar - Clean & Minimal */}
+              <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/70 via-black/30 to-transparent pointer-events-none">
+                <div className="flex items-start justify-between pointer-events-auto">
+                  {/* Issue Badge */}
+                  <div className="glass-card-premium px-5 py-3 rounded-2xl max-w-xs">
+                    <p className="text-xs text-white/50 mb-1 uppercase tracking-wider">
+                      Diagnosing
+                    </p>
+                    <p className="text-sm text-white font-medium leading-tight">
                       {issueName}
                     </p>
                   </div>
@@ -383,14 +387,14 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                   {/* Close Button */}
                   <button
                     onClick={handleClose}
-                    className="w-10 h-10 rounded-full glass-card-premium flex items-center justify-center hover:bg-white/10 transition-all"
+                    className="w-11 h-11 rounded-full glass-card-premium flex items-center justify-center hover:bg-white/20 transition-all active:scale-95"
                   >
                     <svg
                       className="w-5 h-5 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                     >
                       <path
                         strokeLinecap="round"
@@ -401,56 +405,62 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                   </button>
                 </div>
 
-                {/* AI Status Indicator */}
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="glass-card-premium px-4 py-2 rounded-full flex items-center gap-2">
+                {/* Status Row */}
+                <div className="mt-4 flex items-center gap-3 pointer-events-auto">
+                  <div className="glass-card-premium px-4 py-2 rounded-full flex items-center gap-2.5">
                     <div
-                      className={`w-2.5 h-2.5 rounded-full ${
+                      className={`w-2 h-2 rounded-full ${
                         isAISpeaking ? "bg-green-400" : "bg-white/40"
                       }`}
                       style={{
                         animation: isAISpeaking
-                          ? "pulse-subtle 0.5s ease-in-out infinite"
+                          ? "pulse-subtle 1s ease-in-out infinite"
                           : "none",
                       }}
                     />
                     <span className="text-sm text-white font-medium">
-                      {isAISpeaking ? "AI Speaking" : "AI Listening"}
+                      {isAISpeaking ? "AI Speaking" : "AI Ready"}
                     </span>
                   </div>
 
-                  {/* Transcript Toggle */}
-                  <button
-                    onClick={() => setShowTranscript(!showTranscript)}
-                    className="glass-card-premium px-4 py-2 rounded-full hover:bg-white/10 transition-all"
-                  >
-                    <span className="text-sm text-white/80">
-                      {showTranscript ? "Hide" : "Show"} Chat
-                    </span>
-                  </button>
+                  {showTranscript && (
+                    <button
+                      onClick={() => setShowTranscript(false)}
+                      className="glass-card-premium px-4 py-2 rounded-full hover:bg-white/10 transition-all flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                      <span className="text-sm text-white/80">Hide</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Transcript Overlay - Expandable */}
+              {/* Expandable Transcript */}
               <AnimatePresence>
                 {showTranscript && transcript.length > 0 && (
                   <motion.div
-                    initial={{ y: -20, opacity: 0 }}
+                    initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    className="absolute top-32 left-6 right-6 max-h-64 overflow-y-auto glass-card-premium rounded-3xl p-4"
+                    exit={{ y: -100, opacity: 0 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="absolute top-36 left-6 right-6 max-h-80 overflow-y-auto glass-card-premium rounded-3xl p-6 pointer-events-auto"
                   >
-                    <div className="space-y-2">
-                      {transcript.slice(-5).map((message, index) => (
+                    <div className="space-y-3">
+                      {transcript.map((message, index) => (
                         <div
                           key={index}
-                          className={`text-sm ${
+                          className={`text-sm leading-relaxed ${
                             message.startsWith("You:")
-                              ? "text-white/80"
-                              : "text-green-400 font-medium"
+                              ? "text-white/70"
+                              : "text-white font-medium"
                           }`}
                         >
-                          {message}
+                          <span className="text-white/40 text-xs mr-2">
+                            {message.startsWith("You:") ? "YOU" : "AI"}
+                          </span>
+                          {message.replace("You: ", "").replace("AI: ", "")}
                         </div>
                       ))}
                     </div>
@@ -458,57 +468,72 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                 )}
               </AnimatePresence>
 
-              {/* Latest AI Message - Subtitle Style */}
-              {!showTranscript && transcript.length > 0 && (
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  className="absolute bottom-32 left-6 right-6"
-                >
-                  <div className="glass-card-premium rounded-2xl px-6 py-4 backdrop-blur-2xl">
-                    <p className="text-white text-center leading-relaxed">
-                      {transcript[transcript.length - 1]?.replace(
-                        "AI Mechanic: ",
-                        ""
-                      )}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
+              {/* Latest AI Message - Subtitle (when transcript hidden) */}
+              <AnimatePresence>
+                {!showTranscript &&
+                  transcript.length > 0 &&
+                  transcript[transcript.length - 1]?.startsWith("AI:") && (
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: 20, opacity: 0 }}
+                      className="absolute bottom-64 left-8 right-8 pointer-events-none"
+                    >
+                      <div className="glass-card-premium rounded-2xl px-6 py-4 backdrop-blur-2xl">
+                        <p className="text-white text-center leading-relaxed font-medium">
+                          {transcript[transcript.length - 1]?.replace("AI: ", "")}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+              </AnimatePresence>
 
-              {/* Bottom Controls - Apple/Tesla Style */}
-              <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                <div className="max-w-md mx-auto space-y-4">
-                  {/* Voice Activity Visualization */}
-                  <div className="flex items-center justify-center gap-1 mb-4">
-                    {[...Array(7)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className={`w-1.5 rounded-full transition-all duration-150 ${
-                          isHoldingToSpeak && isUserSpeaking
-                            ? "bg-red-400"
-                            : isAISpeaking
-                            ? "bg-green-400"
-                            : "bg-white/30"
-                        }`}
-                        animate={{
-                          height:
+              {/* Bottom Controls - Apple FaceTime Style */}
+              <div className="absolute bottom-0 left-0 right-0 pb-12 pt-32 px-8 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none">
+                <div className="max-w-md mx-auto space-y-6 pointer-events-auto">
+                  {/* Show Transcript Button (when hidden) */}
+                  {!showTranscript && transcript.length > 0 && (
+                    <button
+                      onClick={() => setShowTranscript(true)}
+                      className="w-full glass-card-premium px-4 py-3 rounded-full hover:bg-white/10 transition-all flex items-center justify-center gap-2 mb-4"
+                    >
+                      <svg className="w-4 h-4 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                      </svg>
+                      <span className="text-sm text-white/80 font-medium">View Conversation</span>
+                    </button>
+                  )}
+
+                  {/* Voice Activity Bars */}
+                  {(isHoldingToSpeak || isAISpeaking) && (
+                    <div className="flex items-center justify-center gap-2 h-16">
+                      {[...Array(7)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className={`w-2 rounded-full ${
                             isHoldingToSpeak && isUserSpeaking
-                              ? `${Math.random() * 30 + 20}px`
+                              ? "bg-white"
                               : isAISpeaking
-                              ? `${Math.random() * 30 + 20}px`
-                              : "12px",
-                        }}
-                        transition={{
-                          duration: 0.1,
-                          repeat:
-                            isHoldingToSpeak || isAISpeaking ? Infinity : 0,
-                        }}
-                      />
-                    ))}
-                  </div>
+                                ? "bg-green-400"
+                                : "bg-white/20"
+                          }`}
+                          animate={{
+                            height:
+                              (isHoldingToSpeak && isUserSpeaking) || isAISpeaking
+                                ? `${Math.random() * 48 + 16}px`
+                                : "16px",
+                          }}
+                          transition={{
+                            duration: 0.15,
+                            repeat: (isHoldingToSpeak && isUserSpeaking) || isAISpeaking ? Infinity : 0,
+                            ease: "easeInOut",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
 
-                  {/* Push to Talk Button - Premium Design */}
+                  {/* Push to Talk Button - Premium */}
                   <button
                     onMouseDown={handleSpeakStart}
                     onMouseUp={handleSpeakEnd}
@@ -516,37 +541,45 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                     onTouchStart={handleSpeakStart}
                     onTouchEnd={handleSpeakEnd}
                     disabled={isAISpeaking}
-                    className={`w-full py-6 rounded-full font-semibold text-lg transition-all duration-200 shadow-2xl ${
+                    className={`w-full py-7 rounded-full font-semibold text-base transition-all duration-200 shadow-2xl flex items-center justify-center gap-3 ${
                       isHoldingToSpeak
-                        ? "bg-red-500 text-white scale-95 shadow-red-500/50"
+                        ? "bg-white text-black scale-[0.98]"
                         : isAISpeaking
-                        ? "bg-white/5 text-white/30 cursor-not-allowed"
-                        : "bg-white text-black hover:scale-105 active:scale-95"
+                          ? "bg-white/10 text-white/40 cursor-not-allowed"
+                          : "bg-white text-black hover:scale-[1.02] active:scale-[0.98]"
                     }`}
                   >
-                    {isAISpeaking ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="text-2xl">🔇</span>
-                        <span>AI is speaking...</span>
-                      </span>
-                    ) : isHoldingToSpeak ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="text-2xl animate-pulse">🎤</span>
-                        <span>Listening...</span>
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="text-2xl">🎤</span>
-                        <span>Hold to Speak</span>
-                      </span>
-                    )}
+                    {/* Microphone Icon */}
+                    <svg
+                      className={`w-6 h-6 transition-all ${
+                        isHoldingToSpeak ? "scale-110" : ""
+                      }`}
+                      fill={isHoldingToSpeak ? "currentColor" : "none"}
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                      />
+                    </svg>
+
+                    <span>
+                      {isAISpeaking
+                        ? "AI is speaking"
+                        : isHoldingToSpeak
+                          ? "Listening"
+                          : "Hold to Speak"}
+                    </span>
                   </button>
 
                   {/* Helper Text */}
-                  <p className="text-center text-white/50 text-sm">
+                  <p className="text-center text-white/40 text-sm font-medium">
                     {isAISpeaking
-                      ? "Wait for AI to finish..."
-                      : "Press and hold to talk • Release to let AI respond"}
+                      ? "Release the button and wait..."
+                      : "Press & hold • Speak • Release"}
                   </p>
                 </div>
               </div>

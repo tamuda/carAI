@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -9,15 +8,10 @@ interface SplashScreenProps {
 }
 
 export default function SplashScreen({ onContinue }: SplashScreenProps) {
-  useEffect(() => {
-    const timer = setTimeout(() => onContinue(), 3000);
-    return () => clearTimeout(timer);
-  }, [onContinue]);
-
   return (
     <div className="h-screen flex flex-col items-center justify-center relative overflow-hidden px-8">
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-b from-white/2 via-transparent to-transparent" />
 
       <motion.div
         className="relative mb-16"
@@ -27,7 +21,7 @@ export default function SplashScreen({ onContinue }: SplashScreenProps) {
       >
         {/* Subtle glow background */}
         <div
-          className="absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-transparent blur-3xl"
+          className="absolute inset-0 rounded-full bg-linear-to-b from-white/10 to-transparent blur-3xl"
           style={{ animation: "pulse-subtle 4s ease-in-out infinite" }}
         />
 
@@ -35,7 +29,7 @@ export default function SplashScreen({ onContinue }: SplashScreenProps) {
           className="relative w-48 h-48 rounded-full glass-card-premium flex items-center justify-center border-gradient"
           style={{ animation: "float 6s ease-in-out infinite" }}
         >
-          <div className="absolute inset-8 rounded-full bg-gradient-to-br from-white/5 to-transparent" />
+          <div className="absolute inset-8 rounded-full bg-linear-to-br from-white/5 to-transparent" />
 
           <svg
             className="relative w-24 h-24 text-white/90"
@@ -74,13 +68,18 @@ export default function SplashScreen({ onContinue }: SplashScreenProps) {
         Your car's brain in your pocket.
       </motion.p>
 
-      <Button
-        variant="ghost"
-        onClick={onContinue}
-        className="absolute bottom-20 text-white/40 hover:text-white transition-all duration-300 text-base"
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        Skip
-      </Button>
+        <Button
+          onClick={onContinue}
+          className="glass-card border-white/20 hover:bg-white/10 text-white font-semibold px-8 py-3 text-lg"
+        >
+          Start
+        </Button>
+      </motion.div>
     </div>
   );
 }
