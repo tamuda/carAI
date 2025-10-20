@@ -18,15 +18,19 @@ export const metadata: Metadata = {
     title: "CarOS",
   },
   icons: {
-    icon: "/logo-02.png",
-    apple: "/logo-02.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -43,8 +47,6 @@ export default function RootLayout({
           content="black-translucent"
         />
         <meta name="apple-mobile-web-app-title" content="CarOS" />
-        <link rel="apple-touch-icon" href="/logo-02.png" />
-        <link rel="icon" href="/logo-02.png" />
       </head>
       <body className={`${inter.className} font-sans antialiased`}>
         {children}
