@@ -81,6 +81,7 @@ CarOS is a Progressive Web App that you can install on your iPhone:
 6. **Done!** CarOS now appears on your home screen like a native app
 
 ### PWA Features:
+
 - ✅ Works offline (cached assets)
 - ✅ Full-screen experience (no browser UI)
 - ✅ App icon on home screen
