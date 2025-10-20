@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import AIVideoCall from "@/components/ai-video-call";
+import Image from "next/image";
 
 interface MetricData {
   label: string;
@@ -149,12 +150,12 @@ export default function Dashboard() {
       </motion.div>
 
       <motion.div
-        className="glass-card-premium rounded-[2rem] p-12 mb-12 border-gradient relative overflow-hidden"
+        className="glass-card-premium rounded-4xl p-12 mb-12 border-gradient relative overflow-hidden"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-transparent" />
 
         <div className="relative text-center">
           <p className="text-sm text-white/50 mb-6 uppercase tracking-widest font-medium">
@@ -172,11 +173,11 @@ export default function Dashboard() {
 
           <div className="relative w-full h-4 bg-white/5 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
             <div
-              className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-full"
+              className="absolute inset-0 bg-linear-to-r from-white/10 to-transparent rounded-full"
               style={{ animation: "shimmer 3s infinite" }}
             />
             <div
-              className="relative h-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 rounded-full"
+              className="relative h-full bg-linear-to-r from-yellow-400 via-yellow-500 to-orange-500 rounded-full"
               style={{
                 width: "85%",
                 transition: "width 1.5s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -199,10 +200,10 @@ export default function Dashboard() {
         transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
       >
         <div
-          className="glass-card rounded-[2rem] p-20 flex items-center justify-center relative overflow-hidden"
+          className="glass-card rounded-4xl p-20 flex items-center justify-center relative overflow-hidden"
           style={{ minHeight: "320px" }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-b from-white/5 via-transparent to-transparent" />
 
           <div className="absolute inset-0 flex items-center justify-center">
             {[0, 0.8, 1.6, 2.4].map((delay) => (
@@ -222,13 +223,15 @@ export default function Dashboard() {
               className="absolute inset-0 bg-white/10 blur-[60px] rounded-full"
               style={{ animation: "pulse-subtle 4s ease-in-out infinite" }}
             />
-            <svg
-              className="relative w-64 h-64 text-white/70"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
-            </svg>
+            <div className="relative w-84 h-68">
+              <Image
+                src="/2026_Mazda_CX30_410x277.png"
+                alt="Mazda CX-30"
+                fill
+                className="object-contain contrast-125"
+                priority
+              />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -396,7 +399,7 @@ export default function Dashboard() {
                   <div
                     className={`w-8 h-8 rounded-full ${
                       message.role === "ai"
-                        ? "bg-gradient-to-br from-yellow-400 to-orange-500"
+                        ? "bg-linear-to-br from-yellow-400 to-orange-500"
                         : "bg-white/20"
                     } flex items-center justify-center text-sm`}
                   >

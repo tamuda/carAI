@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-
 
 interface AIVideoCallProps {
   issueName: string;
@@ -60,6 +57,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
   const [transcript, setTranscript] = useState<string[]>([]);
   const [error, setError] = useState<string>("");
   const [isHoldingToSpeak, setIsHoldingToSpeak] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -201,10 +199,10 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
       // Add audio track to peer connection
       const audioTrack = stream.getAudioTracks()[0];
       audioTrackRef.current = audioTrack;
-      
+
       // Disable audio by default (push-to-talk)
       audioTrack.enabled = false;
-      
+
       pc.addTrack(audioTrack, stream);
 
       // Create data channel for events
@@ -312,185 +310,228 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
-        <div className="relative">
-          {/* Video Feed */}
-          <div className="relative w-full aspect-video bg-black">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
+      <DialogContent className="max-w-full max-h-screen h-screen p-0 overflow-hidden border-none">
+        {/* Full Screen Video */}
+        <div className="relative w-full h-full bg-black">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+          />
 
-            {/* Connection Overlay */}
-            {isConnecting && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                <div className="text-center">
-                  <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-white text-lg">
-                    Connecting to AI Mechanic...
-                  </p>
-                </div>
+          {/* Connection Overlay */}
+          {isConnecting && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+              <div className="text-center">
+                <div className="w-20 h-20 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-6" />
+                <p className="text-white text-xl font-semibold">
+                  Connecting to AI Mechanic...
+                </p>
+                <p className="text-white/50 text-sm mt-2">
+                  Setting up video and voice
+                </p>
               </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                <div className="glass-card-premium rounded-2xl p-6 max-w-md text-center">
-                  <p className="text-red-400 mb-4">{error}</p>
-                  <p className="text-sm text-white/60 mb-4">
-                    Make sure you've added your OpenAI API key to .env.local
-                  </p>
-                  <Button onClick={handleClose} className="bg-white text-black">
-                    Close
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* AI Speaking Indicator */}
-            {!isConnecting && !error && (
-              <div className="absolute top-4 left-4 glass-card-premium px-4 py-2 rounded-full flex items-center gap-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    isAISpeaking ? "bg-green-400" : "bg-white/40"
-                  }`}
-                  style={{
-                    animation: isAISpeaking
-                      ? "pulse-subtle 0.5s ease-in-out infinite"
-                      : "none",
-                  }}
-                />
-                <span className="text-sm text-white font-medium">
-                  {isAISpeaking ? "AI Speaking..." : "AI Listening"}
-                </span>
-              </div>
-            )}
-
-            {/* User Microphone Indicator */}
-            {!isConnecting && !error && (
-              <div className="absolute top-4 right-4 glass-card-premium px-4 py-2 rounded-full flex items-center gap-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    isHoldingToSpeak && isUserSpeaking ? "bg-red-500" : "bg-white/40"
-                  }`}
-                  style={{
-                    animation: isHoldingToSpeak && isUserSpeaking
-                      ? "pulse-subtle 0.5s ease-in-out infinite"
-                      : "none",
-                  }}
-                />
-                <span className="text-sm text-white font-medium">
-                  {isHoldingToSpeak && isUserSpeaking ? "You're Speaking" : "Hold to Speak"}
-                </span>
-              </div>
-            )}
-
-            {/* Issue Badge */}
-            <div className="absolute bottom-4 left-4 glass-card-premium px-4 py-2 rounded-2xl">
-              <p className="text-xs text-white/50 mb-1">Fixing:</p>
-              <p className="text-sm text-white font-semibold">{issueName}</p>
             </div>
-          </div>
+          )}
 
-          {/* Transcript */}
-          <div className="p-6 max-h-64 overflow-y-auto space-y-3 bg-black/20">
-            <DialogHeader className="mb-4">
-              <DialogTitle className="text-xl">Live Conversation</DialogTitle>
-              <p className="text-xs text-white/60">
-                Hold the button (or spacebar) to speak - Release to let AI respond
-              </p>
-            </DialogHeader>
+          {/* Error Message */}
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 px-8">
+              <div className="glass-card-premium rounded-3xl p-8 max-w-md text-center">
+                <div className="text-5xl mb-4">⚠️</div>
+                <h3 className="text-xl font-semibold text-white mb-3">Connection Error</h3>
+                <p className="text-red-400 mb-4">{error}</p>
+                <p className="text-sm text-white/60 mb-6">
+                  Make sure you've added your OpenAI API key to .env.local
+                </p>
+                <Button onClick={handleClose} className="bg-white text-black w-full">
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
 
-            {transcript.length === 0 && !isConnecting && !error && (
-              <p className="text-sm text-white/50 italic text-center py-4">
-                Start talking to the AI mechanic...
-              </p>
-            )}
+          {!isConnecting && !error && (
+            <>
+              {/* Top Bar - Issue & Status */}
+              <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/60 to-transparent">
+                <div className="flex items-start justify-between">
+                  {/* Issue Info */}
+                  <div className="glass-card-premium px-4 py-3 rounded-2xl">
+                    <p className="text-xs text-white/60 mb-1">Fixing</p>
+                    <p className="text-sm text-white font-semibold">{issueName}</p>
+                  </div>
 
-            <div className="space-y-2">
-              <AnimatePresence>
-                {transcript.map((message, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className={`text-sm ${
-                      message.startsWith("You:")
-                        ? "text-white/80"
-                        : "text-green-400"
-                    }`}
+                  {/* Close Button */}
+                  <button
+                    onClick={handleClose}
+                    className="w-10 h-10 rounded-full glass-card-premium flex items-center justify-center hover:bg-white/10 transition-all"
                   >
-                    {message}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+                    <svg
+                      className="w-5 h-5 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
 
-            {/* Voice Activity Visualization */}
-            {!isConnecting && !error && (
-              <div className="flex items-center justify-center gap-1 py-4">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-1 rounded-full transition-all duration-150 ${
-                      isUserSpeaking
-                        ? "bg-red-400 h-8"
-                        : isAISpeaking
-                        ? "bg-green-400 h-8"
-                        : "bg-white/20 h-4"
-                    }`}
-                    style={{
-                      animationDelay: `${i * 0.1}s`,
-                      animation:
-                        isUserSpeaking || isAISpeaking
+                {/* AI Status Indicator */}
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="glass-card-premium px-4 py-2 rounded-full flex items-center gap-2">
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full ${
+                        isAISpeaking ? "bg-green-400" : "bg-white/40"
+                      }`}
+                      style={{
+                        animation: isAISpeaking
                           ? "pulse-subtle 0.5s ease-in-out infinite"
                           : "none",
-                      height:
-                        isUserSpeaking || isAISpeaking
-                          ? `${Math.random() * 20 + 20}px`
-                          : "16px",
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+                      }}
+                    />
+                    <span className="text-sm text-white font-medium">
+                      {isAISpeaking ? "AI Speaking" : "AI Listening"}
+                    </span>
+                  </div>
 
-            {/* Push to Talk Controls */}
-            <div className="space-y-3 pt-4">
-              <Button
-                onMouseDown={handleSpeakStart}
-                onMouseUp={handleSpeakEnd}
-                onTouchStart={handleSpeakStart}
-                onTouchEnd={handleSpeakEnd}
-                disabled={isAISpeaking}
-                className={`w-full py-8 text-lg font-semibold rounded-full transition-all duration-200 ${
-                  isHoldingToSpeak
-                    ? "bg-red-500 hover:bg-red-600 text-white scale-95"
-                    : isAISpeaking
-                      ? "bg-white/10 text-white/40 cursor-not-allowed"
-                      : "bg-white hover:bg-white/90 text-black"
-                }`}
-              >
-                {isAISpeaking
-                  ? "🔇 AI is Speaking..."
-                  : isHoldingToSpeak
-                    ? "🎤 Recording..."
-                    : "🎤 Hold to Speak"}
-              </Button>
-              
-              <Button
-                onClick={handleClose}
-                variant="outline"
-                className="w-full border-white/20 text-white hover:bg-white/10"
-              >
-                End Call
-              </Button>
-            </div>
-          </div>
+                  {/* Transcript Toggle */}
+                  <button
+                    onClick={() => setShowTranscript(!showTranscript)}
+                    className="glass-card-premium px-4 py-2 rounded-full hover:bg-white/10 transition-all"
+                  >
+                    <span className="text-sm text-white/80">
+                      {showTranscript ? "Hide" : "Show"} Chat
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Transcript Overlay - Expandable */}
+              <AnimatePresence>
+                {showTranscript && transcript.length > 0 && (
+                  <motion.div
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -20, opacity: 0 }}
+                    className="absolute top-32 left-6 right-6 max-h-64 overflow-y-auto glass-card-premium rounded-3xl p-4"
+                  >
+                    <div className="space-y-2">
+                      {transcript.slice(-5).map((message, index) => (
+                        <div
+                          key={index}
+                          className={`text-sm ${
+                            message.startsWith("You:")
+                              ? "text-white/80"
+                              : "text-green-400 font-medium"
+                          }`}
+                        >
+                          {message}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Latest AI Message - Subtitle Style */}
+              {!showTranscript && transcript.length > 0 && (
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="absolute bottom-32 left-6 right-6"
+                >
+                  <div className="glass-card-premium rounded-2xl px-6 py-4 backdrop-blur-2xl">
+                    <p className="text-white text-center leading-relaxed">
+                      {transcript[transcript.length - 1]?.replace("AI Mechanic: ", "")}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Bottom Controls - Apple/Tesla Style */}
+              <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                <div className="max-w-md mx-auto space-y-4">
+                  {/* Voice Activity Visualization */}
+                  <div className="flex items-center justify-center gap-1 mb-4">
+                    {[...Array(7)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className={`w-1.5 rounded-full transition-all duration-150 ${
+                          isHoldingToSpeak && isUserSpeaking
+                            ? "bg-red-400"
+                            : isAISpeaking
+                              ? "bg-green-400"
+                              : "bg-white/30"
+                        }`}
+                        animate={{
+                          height:
+                            isHoldingToSpeak && isUserSpeaking
+                              ? `${Math.random() * 30 + 20}px`
+                              : isAISpeaking
+                                ? `${Math.random() * 30 + 20}px`
+                                : "12px",
+                        }}
+                        transition={{
+                          duration: 0.1,
+                          repeat: isHoldingToSpeak || isAISpeaking ? Infinity : 0,
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Push to Talk Button - Premium Design */}
+                  <button
+                    onMouseDown={handleSpeakStart}
+                    onMouseUp={handleSpeakEnd}
+                    onMouseLeave={handleSpeakEnd}
+                    onTouchStart={handleSpeakStart}
+                    onTouchEnd={handleSpeakEnd}
+                    disabled={isAISpeaking}
+                    className={`w-full py-6 rounded-full font-semibold text-lg transition-all duration-200 shadow-2xl ${
+                      isHoldingToSpeak
+                        ? "bg-red-500 text-white scale-95 shadow-red-500/50"
+                        : isAISpeaking
+                          ? "bg-white/5 text-white/30 cursor-not-allowed"
+                          : "bg-white text-black hover:scale-105 active:scale-95"
+                    }`}
+                  >
+                    {isAISpeaking ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="text-2xl">🔇</span>
+                        <span>AI is speaking...</span>
+                      </span>
+                    ) : isHoldingToSpeak ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="text-2xl animate-pulse">🎤</span>
+                        <span>Listening...</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="text-2xl">🎤</span>
+                        <span>Hold to Speak</span>
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Helper Text */}
+                  <p className="text-center text-white/50 text-sm">
+                    {isAISpeaking
+                      ? "Wait for AI to finish..."
+                      : "Press and hold to talk • Release to let AI respond"}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
