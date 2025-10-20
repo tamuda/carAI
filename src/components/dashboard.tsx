@@ -138,12 +138,23 @@ export default function Dashboard() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <h1
-          className="text-5xl font-bold mb-4 tracking-tight text-white"
-          style={{ letterSpacing: "-0.02em" }}
-        >
-          CarOS
-        </h1>
+        <div className="flex items-baseline gap-4 mb-4">
+          <div className="relative w-10 h-10 shrink-0">
+            <Image
+              src="/logo-02.png"
+              alt="CarOS Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <h1
+            className="text-5xl font-bold tracking-tight text-white"
+            style={{ letterSpacing: "-0.02em" }}
+          >
+            CarOS
+          </h1>
+        </div>
         <p className="text-lg text-white/60 font-light">
           Real-time vehicle monitoring
         </p>
@@ -362,17 +373,30 @@ export default function Dashboard() {
             </div>
 
             {selectedMetric?.status === "critical" && (
-              <Button
+              <button
                 onClick={() => {
                   if (selectedMetric) {
                     handleAIAssist(selectedMetric);
                     setSelectedMetric(null);
                   }
                 }}
-                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+                className="w-full group relative px-6 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl hover:bg-white/15 hover:border-white/30 transition-all duration-300 ease-out"
               >
-                Get AI Help to Fix This 🤖
-              </Button>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="relative w-6 h-6">
+                    <Image
+                      src="/logo-02.png"
+                      alt="CarOS AI"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                  <span className="text-white font-medium text-base">
+                    Get AI Assistance
+                  </span>
+                </div>
+                <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </button>
             )}
           </div>
         </DialogContent>
@@ -407,11 +431,22 @@ export default function Dashboard() {
                   <div
                     className={`w-8 h-8 rounded-full ${
                       message.role === "ai"
-                        ? "bg-linear-to-br from-yellow-400 to-orange-500"
+                        ? "bg-white/10 border border-white/20"
                         : "bg-white/20"
-                    } flex items-center justify-center text-sm`}
+                    } flex items-center justify-center shrink-0`}
                   >
-                    {message.role === "ai" ? "🤖" : "👤"}
+                    {message.role === "ai" ? (
+                      <div className="relative w-5 h-5">
+                        <Image
+                          src="/logo-02.png"
+                          alt="CarOS AI"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-3 h-3 rounded-full bg-white/60" />
+                    )}
                   </div>
                   <p className="text-sm text-white/90 leading-relaxed flex-1 whitespace-pre-wrap">
                     {message.content}
@@ -422,35 +457,49 @@ export default function Dashboard() {
 
             {aiMessages.length === 2 && (
               <div className="space-y-3">
-                <Button
+                <button
                   onClick={showSolution}
-                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+                  className="w-full group relative px-6 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl hover:bg-white/15 hover:border-white/30 transition-all duration-300 ease-out"
                 >
-                  Show Me How to Fix It
-                </Button>
-                <Button
+                  <span className="text-white font-medium text-base">
+                    Show Solution Steps
+                  </span>
+                  <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+                <button
                   onClick={() => {
                     setShowAIAssistant(false);
                     setShowVideoCall(true);
                   }}
-                  className="w-full glass-card border-white/20 hover:bg-white/10 text-white font-semibold"
-                  variant="outline"
+                  className="w-full group relative px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all duration-300 ease-out"
                 >
-                  📹 Video Call with AI Mechanic
-                </Button>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-white/60" />
+                    <span className="text-white/90 font-medium text-base">
+                      Live Video Guidance
+                    </span>
+                  </div>
+                  <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
               </div>
             )}
 
             {aiMessages.length > 2 && (
-              <Button
+              <button
                 onClick={() => {
                   setShowAIAssistant(false);
                   setShowVideoCall(true);
                 }}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold"
+                className="w-full group relative px-6 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl hover:bg-white/15 hover:border-white/30 transition-all duration-300 ease-out"
               >
-                📹 Get Live Video Guidance
-              </Button>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-white/60" />
+                  <span className="text-white font-medium text-base">
+                    Get Live Video Guidance
+                  </span>
+                </div>
+                <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </button>
             )}
           </div>
         </DialogContent>

@@ -321,7 +321,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-full max-h-screen h-screen p-0 overflow-hidden border-none">
+      <DialogContent className="max-w-full max-h-screen h-screen p-0 overflow-hidden border-none [&>button]:hidden">
         {/* Full Screen Video */}
         <div className="relative w-full h-full bg-black">
           <video
@@ -384,7 +384,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
           {!isConnecting && !error && (
             <>
               {/* Top Bar - Clean & Minimal */}
-              <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/70 via-black/30 to-transparent pointer-events-none">
+              <div className="absolute top-0 left-0 right-0 p-6 bg-linear-to-b from-black/70 via-black/30 to-transparent pointer-events-none">
                 <div className="flex items-start justify-between pointer-events-auto">
                   {/* Issue Badge */}
                   <div className="glass-card-premium px-5 py-3 rounded-2xl max-w-xs">
@@ -514,7 +514,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
               </AnimatePresence>
 
               {/* Bottom Controls - Apple FaceTime Style */}
-              <div className="absolute bottom-0 left-0 right-0 pb-12 pt-32 px-8 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none">
+              <div className="absolute bottom-0 left-0 right-0 pb-12 pt-32 px-8 bg-linear-to-t from-black/90 via-black/60 to-transparent pointer-events-none">
                 <div className="max-w-md mx-auto space-y-6 pointer-events-auto">
                   {/* Show Transcript Button (when hidden) */}
                   {!showTranscript && transcript.length > 0 && (
@@ -543,7 +543,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
                   {/* Voice Activity Bars - Smooth & Premium */}
                   {(isHoldingToSpeak || isAISpeaking) && (
-                    <motion.div 
+                    <motion.div
                       className="flex items-center justify-center gap-2 h-20 mb-2"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}

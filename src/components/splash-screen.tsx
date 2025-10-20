@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface SplashScreenProps {
   onContinue: () => void;
@@ -31,19 +32,15 @@ export default function SplashScreen({ onContinue }: SplashScreenProps) {
         >
           <div className="absolute inset-8 rounded-full bg-linear-to-br from-white/5 to-transparent" />
 
-          <svg
-            className="relative w-24 h-24 text-white/90"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+          <div className="relative w-24 h-24">
+            <Image
+              src="/logo-02.png"
+              alt="CarOS Logo"
+              fill
+              className="object-contain"
+              priority
             />
-          </svg>
+          </div>
         </div>
       </motion.div>
 

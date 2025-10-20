@@ -10,6 +10,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import Image from "next/image";
+import Lottie from "lottie-react";
 
 interface ScanStep {
   id: number;
@@ -94,6 +96,27 @@ export default function AIDiagnostics() {
   const [scanComplete, setScanComplete] = useState(false);
   const [visibleReadings, setVisibleReadings] = useState<string[]>([]);
 
+  // Quotes states
+  const [quotesActive, setQuotesActive] = useState(false);
+  const [quoteStep, setQuoteStep] = useState(0);
+  const [searching, setSearching] = useState(false);
+  const [quotesComplete, setQuotesComplete] = useState(false);
+  const [selectedDiagnostic, setSelectedDiagnostic] = useState<any>(null);
+  const [lottieData, setLottieData] = useState(null);
+
+  // Load Lottie animation
+  useEffect(() => {
+    fetch("/3drunner.json")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Lottie data loaded:", data);
+        setLottieData(data);
+      })
+      .catch((error) => {
+        console.error("Error loading Lottie animation:", error);
+      });
+  }, []);
+
   const diagnostics = [
     {
       code: "P0302",
@@ -156,6 +179,34 @@ export default function AIDiagnostics() {
     setVisibleReadings([]);
   };
 
+  // Quote search functions
+  const startQuoteSearch = (diagnostic: any) => {
+    setSelectedDiagnostic(diagnostic);
+    setQuotesActive(true);
+    setQuoteStep(0);
+    setQuotesComplete(false);
+    setSearching(false);
+  };
+
+  const proceedQuoteSearch = () => {
+    setSearching(true);
+    setQuoteStep(1);
+
+    // Simulate AI searching for quotes
+    setTimeout(() => {
+      setSearching(false);
+      setQuotesComplete(true);
+    }, 4000);
+  };
+
+  const closeQuotes = () => {
+    setQuotesActive(false);
+    setQuoteStep(0);
+    setSearching(false);
+    setQuotesComplete(false);
+    setSelectedDiagnostic(null);
+  };
+
   const step = scanSteps[currentStep];
 
   return (
@@ -207,7 +258,7 @@ export default function AIDiagnostics() {
               <div className="flex items-center gap-3">
                 <div className="relative w-20 h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
                   <div
-                    className="absolute h-full bg-gradient-to-r from-white via-white/90 to-white/70 rounded-full"
+                    className="absolute h-full bg-linear-to-r from-white via-white/90 to-white/70 rounded-full"
                     style={{
                       width: `${diagnostic.confidence}%`,
                       transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -232,7 +283,7 @@ export default function AIDiagnostics() {
             {/* Premium recommendation box */}
             <div className="glass-card rounded-2xl p-6 mb-6 border border-white/10">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                   <svg
                     className="w-4 h-4 text-white/90"
                     fill="none"
@@ -285,6 +336,7 @@ export default function AIDiagnostics() {
               <Button
                 size="lg"
                 className="flex-1 bg-white hover:bg-white/90 text-black font-semibold hover:scale-[1.02] transition-all duration-300"
+                onClick={() => startQuoteSearch(diagnostic)}
               >
                 Find Parts
               </Button>
@@ -340,7 +392,7 @@ export default function AIDiagnostics() {
               {/* Progress Bar */}
               <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-white via-white/90 to-white/70 rounded-full"
+                  className="h-full bg-linear-to-r from-white via-white/90 to-white/70 rounded-full"
                   initial={{ width: 0 }}
                   animate={{
                     width: `${((currentStep + 1) / scanSteps.length) * 100}%`,
@@ -451,6 +503,258 @@ export default function AIDiagnostics() {
               >
                 View Full Report
               </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Premium Quotes Search Dialog */}
+      <Dialog
+        open={quotesActive}
+        onOpenChange={(open) => !open && closeQuotes()}
+      >
+        <DialogContent className="max-w-lg [&>button]:hidden">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {quotesComplete
+                ? "Best Quotes Found"
+                : searching
+                ? "AI Searching Rochester"
+                : "Get Parts Quotes"}
+            </DialogTitle>
+            <DialogDescription>
+              {quotesComplete
+                ? "Found the cheapest parts in your area"
+                : searching
+                ? "Scanning local suppliers and online stores"
+                : `Finding quotes for: ${selectedDiagnostic?.title}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!quotesComplete ? (
+            <div className="space-y-6">
+              {/* Progress Bar */}
+              <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-linear-to-r from-white via-white/90 to-white/70 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: searching ? "100%" : "50%",
+                  }}
+                  transition={{ duration: 0.5 }}
+                  style={{
+                    boxShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                  }}
+                />
+              </div>
+
+              {!searching ? (
+                <motion.div
+                  className="glass-card-premium rounded-2xl p-6"
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                      <div className="relative w-6 h-6">
+                        <Image
+                          src="/logo-02.png"
+                          alt="CarOS AI"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white mb-2">
+                        AI Quote Search
+                      </h3>
+                      <p className="text-sm text-white/60 mb-4">
+                        I'll search Rochester area suppliers, online stores, and
+                        dealerships to find you the best prices for:
+                      </p>
+                      <div className="glass-card rounded-xl p-4">
+                        <p className="text-sm font-medium text-white/90">
+                          {selectedDiagnostic?.title}
+                        </p>
+                        <p className="text-xs text-white/50 mt-1">
+                          {selectedDiagnostic?.recommendation}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="glass-card-premium rounded-2xl p-8 text-center"
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                >
+                  {/* 3D Runner Animation */}
+                  <div className="relative w-32 h-32 mx-auto mb-6">
+                    <div className="absolute inset-0 bg-white/5 rounded-full blur-xl" />
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      {lottieData ? (
+                        <Lottie
+                          animationData={lottieData}
+                          loop={true}
+                          autoplay={true}
+                          style={{ width: "100%", height: "100%" }}
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-white/20 animate-pulse flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-white/40 animate-bounce" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    AI Searching Rochester
+                  </h3>
+                  <p className="text-sm text-white/60 mb-4">
+                    Scanning 12 local suppliers and 8 online stores
+                  </p>
+
+                  <div className="space-y-2">
+                    {[
+                      "AutoZone - Henrietta",
+                      "Advance Auto Parts - Greece",
+                      "O'Reilly Auto Parts - Irondequoit",
+                      "NAPA Auto Parts - Brighton",
+                      "RockAuto.com",
+                      "PartsGeek.com",
+                    ].map((store, index) => (
+                      <motion.div
+                        key={store}
+                        className="flex items-center gap-3 text-sm"
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.3 }}
+                      >
+                        <div className="w-2 h-2 rounded-full bg-green-400" />
+                        <span className="text-white/80">{store}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {!searching && (
+                <button
+                  onClick={proceedQuoteSearch}
+                  className="w-full group relative px-6 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl hover:bg-white/15 hover:border-white/30 transition-all duration-300 ease-out"
+                >
+                  <span className="text-white font-medium text-base">
+                    Start AI Search
+                  </span>
+                  <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <motion.div
+                className="glass-card-premium rounded-2xl p-6"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+              >
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 rounded-full bg-green-400/20 flex items-center justify-center mx-auto mb-4">
+                    <div className="relative w-8 h-8">
+                      <Image
+                        src="/logo-02.png"
+                        alt="CarOS AI"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Best Quotes Found
+                  </h3>
+                  <p className="text-sm text-white/60">
+                    Found 6 competitive quotes in Rochester area
+                  </p>
+                </div>
+
+                {/* Quote Results */}
+                <div className="space-y-3">
+                  {[
+                    {
+                      store: "AutoZone - Henrietta",
+                      price: "$24.99",
+                      savings: "Best Price",
+                      distance: "2.1 mi",
+                    },
+                    {
+                      store: "RockAuto.com",
+                      price: "$26.45",
+                      savings: "Free Shipping",
+                      distance: "Online",
+                    },
+                    {
+                      store: "Advance Auto Parts",
+                      price: "$28.99",
+                      savings: "In Stock",
+                      distance: "3.2 mi",
+                    },
+                    {
+                      store: "NAPA Auto Parts",
+                      price: "$31.50",
+                      savings: "Premium Brand",
+                      distance: "4.1 mi",
+                    },
+                  ].map((quote, index) => (
+                    <motion.div
+                      key={quote.store}
+                      className="glass-card rounded-xl p-4 flex items-center justify-between"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">
+                          {quote.store}
+                        </p>
+                        <p className="text-xs text-white/50">
+                          {quote.distance}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-white">
+                          {quote.price}
+                        </p>
+                        <p className="text-xs text-green-400">
+                          {quote.savings}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={closeQuotes}
+                  className="flex-1 group relative px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all duration-300 ease-out"
+                >
+                  <span className="text-white/90 font-medium text-base">
+                    Close
+                  </span>
+                </button>
+                <button
+                  onClick={closeQuotes}
+                  className="flex-1 group relative px-6 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl hover:bg-white/15 hover:border-white/30 transition-all duration-300 ease-out"
+                >
+                  <span className="text-white font-medium text-base">
+                    Get Directions
+                  </span>
+                  <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+              </div>
             </div>
           )}
         </DialogContent>
