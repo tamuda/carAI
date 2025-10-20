@@ -415,8 +415,8 @@ export default function AIDiagnostics() {
                   {currentStep === 0
                     ? "Start Scan"
                     : currentStep === scanSteps.length - 1
-                      ? "Done - Analyze Results"
-                      : "Done - Next Step"}
+                    ? "Done - Analyze Results"
+                    : "Done - Next Step"}
                 </Button>
               )}
             </div>

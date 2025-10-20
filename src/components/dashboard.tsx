@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import AIVideoCall from "@/components/ai-video-call";
 
 interface MetricData {
   label: string;
@@ -27,6 +28,7 @@ interface MetricData {
 export default function Dashboard() {
   const [selectedMetric, setSelectedMetric] = useState<MetricData | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [showVideoCall, setShowVideoCall] = useState(false);
   const [aiMessages, setAiMessages] = useState<
     Array<{ role: "user" | "ai"; content: string }>
   >([]);
@@ -408,16 +410,48 @@ export default function Dashboard() {
             ))}
 
             {aiMessages.length === 2 && (
+              <div className="space-y-3">
+                <Button
+                  onClick={showSolution}
+                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+                >
+                  Show Me How to Fix It
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAIAssistant(false);
+                    setShowVideoCall(true);
+                  }}
+                  className="w-full glass-card border-white/20 hover:bg-white/10 text-white font-semibold"
+                  variant="outline"
+                >
+                  📹 Video Call with AI Mechanic
+                </Button>
+              </div>
+            )}
+
+            {aiMessages.length > 2 && (
               <Button
-                onClick={showSolution}
-                className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+                onClick={() => {
+                  setShowAIAssistant(false);
+                  setShowVideoCall(true);
+                }}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold"
               >
-                Show Me How to Fix It
+                📹 Get Live Video Guidance
               </Button>
             )}
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* AI Video Call */}
+      {showVideoCall && (
+        <AIVideoCall
+          issueName="High Coolant Temperature (105°C)"
+          onClose={() => setShowVideoCall(false)}
+        />
+      )}
     </div>
   );
 }
