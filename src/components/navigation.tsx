@@ -1,6 +1,6 @@
 "use client";
 
-import { House, TrendingUp, User } from "lucide-react";
+import { House } from "lucide-react";
 import Image from "next/image";
 
 interface NavigationProps {
@@ -30,14 +30,16 @@ export default function Navigation({
     },
     {
       id: "insights",
-      Icon: TrendingUp,
-      type: "lucide" as const,
+      Icon: null,
+      type: "image" as const,
+      imageSrc: "/steering-wheel.svg",
       label: "Insights",
     },
     {
       id: "profile",
-      Icon: User,
-      type: "lucide" as const,
+      Icon: null,
+      type: "image" as const,
+      imageSrc: "/car.svg",
       label: "Profile",
     },
   ];
@@ -48,7 +50,7 @@ export default function Navigation({
         <div className="flex items-center justify-around px-4 py-5">
           {navItems.map((item) => {
             const isActive = currentScreen === item.id;
-            
+
             return (
               <button
                 key={item.id}
@@ -71,7 +73,11 @@ export default function Navigation({
                     />
                   )}
                   {item.type === "image" && item.imageSrc && (
-                    <div className={`w-6 h-6 relative z-10 ${isActive ? "opacity-100" : "opacity-40"} transition-opacity`}>
+                    <div
+                      className={`w-6 h-6 relative z-10 ${
+                        isActive ? "opacity-100" : "opacity-40"
+                      } transition-opacity`}
+                    >
                       <Image
                         src={item.imageSrc}
                         alt={item.label}

@@ -255,12 +255,12 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-2 gap-5 mb-12">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5 mb-12">
         {metrics.map((metric, index) => (
           <motion.div
             key={metric.label}
             onClick={() => setSelectedMetric(metric)}
-            className={`glass-card rounded-3xl p-7 border-gradient hover:scale-[1.03] transition-all duration-300 cursor-pointer ${
+            className={`glass-card rounded-3xl p-5 sm:p-7 border-gradient hover:scale-[1.03] transition-all duration-300 cursor-pointer ${
               metric.status === "critical" ? "ring-2 ring-yellow-400/50" : ""
             }`}
             initial={{ y: 20, opacity: 0 }}
@@ -271,12 +271,12 @@ export default function Dashboard() {
               ease: [0.16, 1, 0.3, 1],
             }}
           >
-            <p className="text-xs text-white/50 mb-4 uppercase tracking-widest font-medium">
+            <p className="text-xs text-white/50 mb-3 sm:mb-4 uppercase tracking-widest font-medium">
               {metric.label}
             </p>
-            <div className="flex items-baseline gap-2 mb-4">
+            <div className="flex items-baseline gap-1.5 sm:gap-2 mb-3 sm:mb-4">
               <span
-                className={`text-4xl font-bold tracking-tight ${
+                className={`text-3xl sm:text-4xl font-bold tracking-tight ${
                   metric.status === "critical"
                     ? "text-yellow-400"
                     : "text-white"
@@ -285,7 +285,7 @@ export default function Dashboard() {
               >
                 {metric.value}
               </span>
-              <span className="text-sm text-white/50 font-light">
+              <span className="text-xs sm:text-sm text-white/50 font-light">
                 {metric.unit}
               </span>
             </div>

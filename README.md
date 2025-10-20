@@ -4,13 +4,14 @@ A premium, Apple-inspired car diagnostics application with OBD-II integration, b
 
 ## 🚀 Features
 
+- **Progressive Web App (PWA)** 📱 - Install on your iPhone like a native app!
 - **Real-time Dashboard** - Monitor vehicle metrics with glassmorphic cards
 - **Interactive Metric Cards** - Click any metric to learn what it means (RPM, Coolant, etc.)
 - **AI Diagnostics** - Natural language insights for car issues
 - **AI Video Mechanic** 🎥 - **REAL voice calls with AI using OpenAI Realtime API!**
   - Turn on your camera and mic
   - AI mechanic sees through your camera
-  - Real-time voice conversation
+  - Real-time voice conversation with push-to-talk
   - Step-by-step repair guidance
   - Live transcription of conversation
 - **Interactive Full Scan** - 6-step diagnostic scan with live instructions
@@ -65,6 +66,27 @@ The AI Video Mechanic feature requires an OpenAI API key with access to the Real
 5. Restart the dev server
 
 **Note:** The Realtime API is currently in beta and requires GPT-4 API access.
+
+## 📱 Install as iPhone App (PWA)
+
+CarOS is a Progressive Web App that you can install on your iPhone:
+
+### Installation Steps:
+
+1. **Open Safari** on your iPhone
+2. **Navigate to** your deployed CarOS URL
+3. **Tap the Share button** (square with arrow pointing up)
+4. **Scroll down** and tap "Add to Home Screen"
+5. **Tap "Add"** in the top right
+6. **Done!** CarOS now appears on your home screen like a native app
+
+### PWA Features:
+- ✅ Works offline (cached assets)
+- ✅ Full-screen experience (no browser UI)
+- ✅ App icon on home screen
+- ✅ Fast loading with service worker
+- ✅ iOS status bar integration
+- ✅ Native-like performance
 
 ## 🏗️ Project Structure
 
