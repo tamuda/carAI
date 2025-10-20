@@ -35,7 +35,11 @@ const scanSteps: ScanStep[] = [
     instruction: "Gently rev the engine to 3000 RPM and hold for 2 seconds",
     action: "Analyzing engine response and acceleration...",
     duration: 4000,
-    readings: ["Peak RPM: 3,050", "Throttle Response: Good", "Fuel Trim: +2.3%"],
+    readings: [
+      "Peak RPM: 3,050",
+      "Throttle Response: Good",
+      "Fuel Trim: +2.3%",
+    ],
   },
   {
     id: 3,
@@ -43,7 +47,11 @@ const scanSteps: ScanStep[] = [
     instruction: "Turn on your headlights (high beam)",
     action: "Testing battery and alternator load...",
     duration: 3000,
-    readings: ["Battery Voltage: 14.2V", "Alternator: Charging", "Load Test: Pass"],
+    readings: [
+      "Battery Voltage: 14.2V",
+      "Alternator: Charging",
+      "Load Test: Pass",
+    ],
   },
   {
     id: 4,
@@ -51,7 +59,11 @@ const scanSteps: ScanStep[] = [
     instruction: "Turn on the AC to maximum cooling",
     action: "Checking AC compressor and cooling system...",
     duration: 3500,
-    readings: ["AC Pressure: 45 PSI", "Compressor: Active", "Cabin Temp: Dropping"],
+    readings: [
+      "AC Pressure: 45 PSI",
+      "Compressor: Active",
+      "Cabin Temp: Dropping",
+    ],
   },
   {
     id: 5,
@@ -59,7 +71,11 @@ const scanSteps: ScanStep[] = [
     instruction: "Press and hold the brake pedal firmly",
     action: "Testing brake pressure and ABS system...",
     duration: 3000,
-    readings: ["Brake Pressure: 1,200 PSI", "ABS: Functional", "Pad Wear: 60% remaining"],
+    readings: [
+      "Brake Pressure: 1,200 PSI",
+      "ABS: Functional",
+      "Pad Wear: 60% remaining",
+    ],
   },
   {
     id: 6,
@@ -107,29 +123,29 @@ export default function AIDiagnostics() {
   };
 
   const proceedToNextStep = () => {
-    if (currentStep < scanSteps.length - 1) {
-      setScanning(true);
-      setVisibleReadings([]);
+    setScanning(true);
+    setVisibleReadings([]);
 
-      const step = scanSteps[currentStep];
-      
-      // Show readings one by one
-      step.readings.forEach((reading, index) => {
-        setTimeout(() => {
-          setVisibleReadings((prev) => [...prev, reading]);
-        }, (step.duration / step.readings.length) * (index + 1));
-      });
+    const step = scanSteps[currentStep];
 
-      // Move to next step
+    // Show readings one by one
+    step.readings.forEach((reading, index) => {
       setTimeout(() => {
-        setScanning(false);
-        if (currentStep === scanSteps.length - 1) {
-          setScanComplete(true);
-        } else {
-          setCurrentStep(currentStep + 1);
-        }
-      }, step.duration);
-    }
+        setVisibleReadings((prev) => [...prev, reading]);
+      }, (step.duration / step.readings.length) * (index + 1));
+    });
+
+    // Move to next step or complete
+    setTimeout(() => {
+      setScanning(false);
+      if (currentStep === scanSteps.length - 1) {
+        // Last step - show completion
+        setScanComplete(true);
+      } else {
+        // Move to next step
+        setCurrentStep(currentStep + 1);
+      }
+    }, step.duration);
   };
 
   const closeScan = () => {
@@ -308,7 +324,9 @@ export default function AIDiagnostics() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-2xl">
-              {scanComplete ? "Scan Complete! 🎉" : `Step ${currentStep + 1} of ${scanSteps.length}`}
+              {scanComplete
+                ? "Scan Complete! 🎉"
+                : `Step ${currentStep + 1} of ${scanSteps.length}`}
             </DialogTitle>
             <DialogDescription>
               {scanComplete
@@ -383,9 +401,7 @@ export default function AIDiagnostics() {
                   <div className="mt-4">
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span className="text-sm text-white/60">
-                        Scanning...
-                      </span>
+                      <span className="text-sm text-white/60">Scanning...</span>
                     </div>
                   </div>
                 )}
@@ -396,7 +412,11 @@ export default function AIDiagnostics() {
                   onClick={proceedToNextStep}
                   className="w-full bg-white hover:bg-white/90 text-black font-semibold py-6"
                 >
-                  {currentStep === 0 ? "Start Scan" : "Done - Next Step"}
+                  {currentStep === 0
+                    ? "Start Scan"
+                    : currentStep === scanSteps.length - 1
+                      ? "Done - Analyze Results"
+                      : "Done - Next Step"}
                 </Button>
               )}
             </div>
