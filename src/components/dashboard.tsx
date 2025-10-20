@@ -122,8 +122,8 @@ export default function Dashboard() {
           role: "ai",
           content:
             "Here's a step-by-step solution:\n\n" +
-            metric.aiSolution
-              .map((step, i) => `${i + 1}. ${step}`)
+            metric
+              .aiSolution!.map((step, i) => `${i + 1}. ${step}`)
               .join("\n\n"),
         },
       ]);
@@ -142,7 +142,7 @@ export default function Dashboard() {
           className="text-5xl font-bold mb-4 tracking-tight text-white"
           style={{ letterSpacing: "-0.02em" }}
         >
-          Dashboard
+          CarOS
         </h1>
         <p className="text-lg text-white/60 font-light">
           Real-time vehicle monitoring
@@ -158,8 +158,11 @@ export default function Dashboard() {
         <div className="absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-transparent" />
 
         <div className="relative text-center">
-          <p className="text-sm text-white/50 mb-6 uppercase tracking-widest font-medium">
+          <p className="text-sm text-white/50 mb-2 uppercase tracking-widest font-medium">
             Vehicle Health
+          </p>
+          <p className="text-lg text-white/80 mb-6 font-medium">
+            2023 Mazda CX-30 Turbo
           </p>
           <div
             className="text-8xl font-bold text-white mb-8 tracking-tight"
@@ -200,7 +203,7 @@ export default function Dashboard() {
         transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
       >
         <div
-          className="glass-card rounded-4xl p-20 flex items-center justify-center relative overflow-hidden"
+          className="glass-card rounded-4xl p-20 flex flex-col items-center justify-center relative overflow-hidden"
           style={{ minHeight: "320px" }}
         >
           <div className="absolute inset-0 bg-linear-to-b from-white/5 via-transparent to-transparent" />
@@ -218,19 +221,24 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <div className="relative">
-            <div
-              className="absolute inset-0 bg-white/10 blur-[60px] rounded-full"
-              style={{ animation: "pulse-subtle 4s ease-in-out infinite" }}
-            />
-            <div className="relative w-84 h-68">
-              <Image
-                src="/2026_Mazda_CX30_410x277.png"
-                alt="Mazda CX-30"
-                fill
-                className="object-contain contrast-125"
-                priority
+          <div className="relative z-10 text-center">
+            <p className="text-sm text-white/60 mb-4 uppercase tracking-widest font-medium">
+              2023 Mazda CX-30 Turbo
+            </p>
+            <div className="relative">
+              <div
+                className="absolute inset-0 bg-white/10 blur-[60px] rounded-full"
+                style={{ animation: "pulse-subtle 4s ease-in-out infinite" }}
               />
+              <div className="relative w-84 h-68">
+                <Image
+                  src="/2026_Mazda_CX30_410x277.png"
+                  alt="Mazda CX-30"
+                  fill
+                  className="object-contain contrast-110 brightness-110"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </div>

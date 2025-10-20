@@ -3,10 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface AIVideoCallProps {
   issueName: string;
@@ -211,18 +208,16 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
       dc.onopen = () => {
         console.log("Data channel opened");
-        // Send initial instructions
+        // Send initial instructions with turn_detection disabled for push-to-talk
         dc.send(
           JSON.stringify({
             type: "session.update",
             session: {
               instructions: MECHANIC_INSTRUCTIONS,
               voice: "sage",
-              turn_detection: {
-                type: "server_vad",
-                threshold: 0.5,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 500,
+              turn_detection: null, // Disable automatic turn detection for manual push-to-talk
+              input_audio_transcription: {
+                model: "whisper-1",
               },
             },
           })
@@ -299,6 +294,20 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     if (audioTrackRef.current) {
       audioTrackRef.current.enabled = false;
       setIsHoldingToSpeak(false);
+      
+      // Manually trigger AI response after user stops speaking
+      if (dataChannelRef.current) {
+        dataChannelRef.current.send(
+          JSON.stringify({
+            type: "input_audio_buffer.commit",
+          })
+        );
+        dataChannelRef.current.send(
+          JSON.stringify({
+            type: "response.create",
+          })
+        );
+      }
     }
   };
 
@@ -341,12 +350,17 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 px-8">
               <div className="glass-card-premium rounded-3xl p-8 max-w-md text-center">
                 <div className="text-5xl mb-4">⚠️</div>
-                <h3 className="text-xl font-semibold text-white mb-3">Connection Error</h3>
+                <h3 className="text-xl font-semibold text-white mb-3">
+                  Connection Error
+                </h3>
                 <p className="text-red-400 mb-4">{error}</p>
                 <p className="text-sm text-white/60 mb-6">
                   Make sure you've added your OpenAI API key to .env.local
                 </p>
-                <Button onClick={handleClose} className="bg-white text-black w-full">
+                <Button
+                  onClick={handleClose}
+                  className="bg-white text-black w-full"
+                >
                   Close
                 </Button>
               </div>
@@ -361,7 +375,9 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                   {/* Issue Info */}
                   <div className="glass-card-premium px-4 py-3 rounded-2xl">
                     <p className="text-xs text-white/60 mb-1">Fixing</p>
-                    <p className="text-sm text-white font-semibold">{issueName}</p>
+                    <p className="text-sm text-white font-semibold">
+                      {issueName}
+                    </p>
                   </div>
 
                   {/* Close Button */}
@@ -451,7 +467,10 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                 >
                   <div className="glass-card-premium rounded-2xl px-6 py-4 backdrop-blur-2xl">
                     <p className="text-white text-center leading-relaxed">
-                      {transcript[transcript.length - 1]?.replace("AI Mechanic: ", "")}
+                      {transcript[transcript.length - 1]?.replace(
+                        "AI Mechanic: ",
+                        ""
+                      )}
                     </p>
                   </div>
                 </motion.div>
@@ -469,20 +488,21 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                           isHoldingToSpeak && isUserSpeaking
                             ? "bg-red-400"
                             : isAISpeaking
-                              ? "bg-green-400"
-                              : "bg-white/30"
+                            ? "bg-green-400"
+                            : "bg-white/30"
                         }`}
                         animate={{
                           height:
                             isHoldingToSpeak && isUserSpeaking
                               ? `${Math.random() * 30 + 20}px`
                               : isAISpeaking
-                                ? `${Math.random() * 30 + 20}px`
-                                : "12px",
+                              ? `${Math.random() * 30 + 20}px`
+                              : "12px",
                         }}
                         transition={{
                           duration: 0.1,
-                          repeat: isHoldingToSpeak || isAISpeaking ? Infinity : 0,
+                          repeat:
+                            isHoldingToSpeak || isAISpeaking ? Infinity : 0,
                         }}
                       />
                     ))}
@@ -500,8 +520,8 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       isHoldingToSpeak
                         ? "bg-red-500 text-white scale-95 shadow-red-500/50"
                         : isAISpeaking
-                          ? "bg-white/5 text-white/30 cursor-not-allowed"
-                          : "bg-white text-black hover:scale-105 active:scale-95"
+                        ? "bg-white/5 text-white/30 cursor-not-allowed"
+                        : "bg-white text-black hover:scale-105 active:scale-95"
                     }`}
                   >
                     {isAISpeaking ? (
