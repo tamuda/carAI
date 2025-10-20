@@ -1,9 +1,83 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+interface ScanStep {
+  id: number;
+  title: string;
+  instruction: string;
+  action: string;
+  duration: number;
+  readings: string[];
+}
+
+const scanSteps: ScanStep[] = [
+  {
+    id: 1,
+    title: "Engine Start",
+    instruction: "Start your engine and let it idle",
+    action: "Checking idle RPM and engine temperature...",
+    duration: 3000,
+    readings: ["Idle RPM: 850", "Oil Pressure: Normal", "Engine Temp: 92°C"],
+  },
+  {
+    id: 2,
+    title: "Rev Test",
+    instruction: "Gently rev the engine to 3000 RPM and hold for 2 seconds",
+    action: "Analyzing engine response and acceleration...",
+    duration: 4000,
+    readings: ["Peak RPM: 3,050", "Throttle Response: Good", "Fuel Trim: +2.3%"],
+  },
+  {
+    id: 3,
+    title: "Electrical System",
+    instruction: "Turn on your headlights (high beam)",
+    action: "Testing battery and alternator load...",
+    duration: 3000,
+    readings: ["Battery Voltage: 14.2V", "Alternator: Charging", "Load Test: Pass"],
+  },
+  {
+    id: 4,
+    title: "Climate Control",
+    instruction: "Turn on the AC to maximum cooling",
+    action: "Checking AC compressor and cooling system...",
+    duration: 3500,
+    readings: ["AC Pressure: 45 PSI", "Compressor: Active", "Cabin Temp: Dropping"],
+  },
+  {
+    id: 5,
+    title: "Brake System",
+    instruction: "Press and hold the brake pedal firmly",
+    action: "Testing brake pressure and ABS system...",
+    duration: 3000,
+    readings: ["Brake Pressure: 1,200 PSI", "ABS: Functional", "Pad Wear: 60% remaining"],
+  },
+  {
+    id: 6,
+    title: "Final Analysis",
+    instruction: "Return to idle - Analyzing all data...",
+    action: "Running AI diagnostics on collected data...",
+    duration: 4000,
+    readings: ["Data Points: 127", "Anomalies: 2 Found", "Confidence: 94%"],
+  },
+];
 
 export default function AIDiagnostics() {
+  const [scanActive, setScanActive] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [scanning, setScanning] = useState(false);
+  const [scanComplete, setScanComplete] = useState(false);
+  const [visibleReadings, setVisibleReadings] = useState<string[]>([]);
+
   const diagnostics = [
     {
       code: "P0302",
@@ -24,6 +98,49 @@ export default function AIDiagnostics() {
       impact: "Low",
     },
   ];
+
+  const startScan = () => {
+    setScanActive(true);
+    setCurrentStep(0);
+    setScanComplete(false);
+    setVisibleReadings([]);
+  };
+
+  const proceedToNextStep = () => {
+    if (currentStep < scanSteps.length - 1) {
+      setScanning(true);
+      setVisibleReadings([]);
+
+      const step = scanSteps[currentStep];
+      
+      // Show readings one by one
+      step.readings.forEach((reading, index) => {
+        setTimeout(() => {
+          setVisibleReadings((prev) => [...prev, reading]);
+        }, (step.duration / step.readings.length) * (index + 1));
+      });
+
+      // Move to next step
+      setTimeout(() => {
+        setScanning(false);
+        if (currentStep === scanSteps.length - 1) {
+          setScanComplete(true);
+        } else {
+          setCurrentStep(currentStep + 1);
+        }
+      }, step.duration);
+    }
+  };
+
+  const closeScan = () => {
+    setScanActive(false);
+    setCurrentStep(0);
+    setScanning(false);
+    setScanComplete(false);
+    setVisibleReadings([]);
+  };
+
+  const step = scanSteps[currentStep];
 
   return (
     <div className="min-h-screen pb-24 pt-12 px-6">
@@ -165,7 +282,10 @@ export default function AIDiagnostics() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       >
-        <Button className="w-full bg-white hover:bg-white/90 text-black py-8 text-lg font-semibold rounded-full hover:scale-[1.02] transition-all duration-300 shadow-xl">
+        <Button
+          onClick={startScan}
+          className="w-full bg-white hover:bg-white/90 text-black py-8 text-lg font-semibold rounded-full hover:scale-[1.02] transition-all duration-300 shadow-xl"
+        >
           <svg
             className="w-6 h-6 mr-3"
             fill="none"
@@ -182,6 +302,139 @@ export default function AIDiagnostics() {
           Run Full Scan
         </Button>
       </motion.div>
+
+      {/* Interactive Scan Dialog */}
+      <Dialog open={scanActive} onOpenChange={(open) => !open && closeScan()}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {scanComplete ? "Scan Complete! 🎉" : `Step ${currentStep + 1} of ${scanSteps.length}`}
+            </DialogTitle>
+            <DialogDescription>
+              {scanComplete
+                ? "Full diagnostic scan completed successfully"
+                : step.title}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!scanComplete ? (
+            <div className="space-y-6">
+              {/* Progress Bar */}
+              <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-white via-white/90 to-white/70 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${((currentStep + 1) / scanSteps.length) * 100}%`,
+                  }}
+                  transition={{ duration: 0.5 }}
+                  style={{
+                    boxShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                  }}
+                />
+              </div>
+
+              {/* Instruction Card */}
+              <motion.div
+                className="glass-card-premium rounded-2xl p-6"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                key={currentStep}
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-2xl">
+                    {scanning ? "⚙️" : "👉"}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      {scanning ? step.action : step.instruction}
+                    </h3>
+                    {!scanning && (
+                      <p className="text-sm text-white/60">
+                        Follow this instruction then tap "Done"
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Readings */}
+                <AnimatePresence>
+                  {scanning && visibleReadings.length > 0 && (
+                    <div className="space-y-2 mt-4 pt-4 border-t border-white/10">
+                      {visibleReadings.map((reading, index) => (
+                        <motion.div
+                          key={index}
+                          className="flex items-center gap-3 text-sm"
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: 0.1 }}
+                        >
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-white/80 font-mono text-xs">
+                            {reading}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </AnimatePresence>
+
+                {scanning && (
+                  <div className="mt-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="text-sm text-white/60">
+                        Scanning...
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+
+              {!scanning && (
+                <Button
+                  onClick={proceedToNextStep}
+                  className="w-full bg-white hover:bg-white/90 text-black font-semibold py-6"
+                >
+                  {currentStep === 0 ? "Start Scan" : "Done - Next Step"}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="glass-card-premium rounded-2xl p-6 text-center">
+                <div className="text-6xl mb-4">✅</div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  All Systems Checked
+                </h3>
+                <p className="text-sm text-white/60 mb-4">
+                  Analyzed 127 data points across 6 vehicle systems
+                </p>
+                <div className="grid grid-cols-3 gap-4 mt-6">
+                  <div className="glass-card rounded-xl p-3">
+                    <div className="text-2xl font-bold text-green-400">94%</div>
+                    <div className="text-xs text-white/50">Health Score</div>
+                  </div>
+                  <div className="glass-card rounded-xl p-3">
+                    <div className="text-2xl font-bold text-yellow-400">2</div>
+                    <div className="text-xs text-white/50">Issues Found</div>
+                  </div>
+                  <div className="glass-card rounded-xl p-3">
+                    <div className="text-2xl font-bold text-white">6</div>
+                    <div className="text-xs text-white/50">Systems OK</div>
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={closeScan}
+                className="w-full bg-white hover:bg-white/90 text-black font-semibold py-6"
+              >
+                View Full Report
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
