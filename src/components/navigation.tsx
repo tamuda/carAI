@@ -1,6 +1,7 @@
 "use client";
 
-import { House, Wrench, TrendingUp, User } from "lucide-react";
+import { House, TrendingUp, User } from "lucide-react";
+import Image from "next/image";
 
 interface NavigationProps {
   currentScreen: string;
@@ -17,21 +18,26 @@ export default function Navigation({
     {
       id: "dashboard",
       Icon: House,
+      type: "lucide" as const,
       label: "Home",
     },
     {
       id: "diagnostics",
-      Icon: Wrench,
+      Icon: null,
+      type: "image" as const,
+      imageSrc: "/malfunction-indicador.svg",
       label: "Scan",
     },
     {
       id: "insights",
       Icon: TrendingUp,
+      type: "lucide" as const,
       label: "Insights",
     },
     {
       id: "profile",
       Icon: User,
+      type: "lucide" as const,
       label: "Profile",
     },
   ];
@@ -42,7 +48,6 @@ export default function Navigation({
         <div className="flex items-center justify-around px-4 py-5">
           {navItems.map((item) => {
             const isActive = currentScreen === item.id;
-            const Icon = item.Icon;
             
             return (
               <button
@@ -59,10 +64,23 @@ export default function Navigation({
                 )}
 
                 <div className="relative">
-                  <Icon
-                    className="w-6 h-6 relative z-10"
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
+                  {item.type === "lucide" && item.Icon && (
+                    <item.Icon
+                      className="w-6 h-6 relative z-10"
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                  )}
+                  {item.type === "image" && item.imageSrc && (
+                    <div className={`w-6 h-6 relative z-10 ${isActive ? "opacity-100" : "opacity-40"} transition-opacity`}>
+                      <Image
+                        src={item.imageSrc}
+                        alt={item.label}
+                        width={24}
+                        height={24}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <span
