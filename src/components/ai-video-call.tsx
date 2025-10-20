@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+
 interface AIVideoCallProps {
   issueName: string;
   onClose: () => void;
@@ -58,13 +59,15 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [transcript, setTranscript] = useState<string[]>([]);
   const [error, setError] = useState<string>("");
-  
+  const [isHoldingToSpeak, setIsHoldingToSpeak] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const userAnalyzerRef = useRef<AnalyserNode | null>(null);
   const aiAnalyzerRef = useRef<AnalyserNode | null>(null);
+  const audioTrackRef = useRef<MediaStreamTrack | null>(null);
 
   useEffect(() => {
     startVoiceSession();
@@ -73,6 +76,38 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
       cleanup();
     };
   }, []);
+
+  // Handle push-to-talk state
+  useEffect(() => {
+    if (audioTrackRef.current) {
+      audioTrackRef.current.enabled = isHoldingToSpeak;
+    }
+  }, [isHoldingToSpeak]);
+
+  // Keyboard support - spacebar to talk
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && !isAISpeaking && !isHoldingToSpeak) {
+        e.preventDefault();
+        handleSpeakStart();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space" && isHoldingToSpeak) {
+        e.preventDefault();
+        handleSpeakEnd();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isHoldingToSpeak, isAISpeaking]);
 
   const cleanup = () => {
     if (cameraStream) {
@@ -124,7 +159,8 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
           const detectAIVoice = () => {
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
-            const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            const average =
+              dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
             setIsAISpeaking(average > 10);
             requestAnimationFrame(detectAIVoice);
           };
@@ -164,6 +200,11 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
       // Add audio track to peer connection
       const audioTrack = stream.getAudioTracks()[0];
+      audioTrackRef.current = audioTrack;
+      
+      // Disable audio by default (push-to-talk)
+      audioTrack.enabled = false;
+      
       pc.addTrack(audioTrack, stream);
 
       // Create data channel for events
@@ -193,22 +234,20 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
       dc.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
-          
+
           // Handle transcript updates
-          if (message.type === "conversation.item.input_audio_transcription.completed") {
-            setTranscript((prev) => [
-              ...prev,
-              `You: ${message.transcript}`,
-            ]);
+          if (
+            message.type ===
+            "conversation.item.input_audio_transcription.completed"
+          ) {
+            setTranscript((prev) => [...prev, `You: ${message.transcript}`]);
           }
-          
+
           if (message.type === "response.done") {
-            const text = message.response?.output?.[0]?.content?.[0]?.transcript;
+            const text =
+              message.response?.output?.[0]?.content?.[0]?.transcript;
             if (text) {
-              setTranscript((prev) => [
-                ...prev,
-                `AI Mechanic: ${text}`,
-              ]);
+              setTranscript((prev) => [...prev, `AI Mechanic: ${text}`]);
             }
           }
         } catch (error) {
@@ -251,6 +290,20 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     }
   };
 
+  const handleSpeakStart = () => {
+    if (audioTrackRef.current) {
+      audioTrackRef.current.enabled = true;
+      setIsHoldingToSpeak(true);
+    }
+  };
+
+  const handleSpeakEnd = () => {
+    if (audioTrackRef.current) {
+      audioTrackRef.current.enabled = false;
+      setIsHoldingToSpeak(false);
+    }
+  };
+
   const handleClose = () => {
     cleanup();
     setIsOpen(false);
@@ -270,13 +323,15 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
               muted
               className="w-full h-full object-cover"
             />
-            
+
             {/* Connection Overlay */}
             {isConnecting && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                 <div className="text-center">
                   <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-white text-lg">Connecting to AI Mechanic...</p>
+                  <p className="text-white text-lg">
+                    Connecting to AI Mechanic...
+                  </p>
                 </div>
               </div>
             )}
@@ -304,7 +359,9 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                     isAISpeaking ? "bg-green-400" : "bg-white/40"
                   }`}
                   style={{
-                    animation: isAISpeaking ? "pulse-subtle 0.5s ease-in-out infinite" : "none",
+                    animation: isAISpeaking
+                      ? "pulse-subtle 0.5s ease-in-out infinite"
+                      : "none",
                   }}
                 />
                 <span className="text-sm text-white font-medium">
@@ -318,14 +375,16 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
               <div className="absolute top-4 right-4 glass-card-premium px-4 py-2 rounded-full flex items-center gap-2">
                 <div
                   className={`w-3 h-3 rounded-full ${
-                    isUserSpeaking ? "bg-red-500" : "bg-white/40"
+                    isHoldingToSpeak && isUserSpeaking ? "bg-red-500" : "bg-white/40"
                   }`}
                   style={{
-                    animation: isUserSpeaking ? "pulse-subtle 0.5s ease-in-out infinite" : "none",
+                    animation: isHoldingToSpeak && isUserSpeaking
+                      ? "pulse-subtle 0.5s ease-in-out infinite"
+                      : "none",
                   }}
                 />
                 <span className="text-sm text-white font-medium">
-                  {isUserSpeaking ? "You're Speaking" : "Microphone On"}
+                  {isHoldingToSpeak && isUserSpeaking ? "You're Speaking" : "Hold to Speak"}
                 </span>
               </div>
             )}
@@ -342,7 +401,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
             <DialogHeader className="mb-4">
               <DialogTitle className="text-xl">Live Conversation</DialogTitle>
               <p className="text-xs text-white/60">
-                Speak naturally - the AI can hear you
+                Hold the button (or spacebar) to speak - Release to let AI respond
               </p>
             </DialogHeader>
 
@@ -381,8 +440,8 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       isUserSpeaking
                         ? "bg-red-400 h-8"
                         : isAISpeaking
-                          ? "bg-green-400 h-8"
-                          : "bg-white/20 h-4"
+                        ? "bg-green-400 h-8"
+                        : "bg-white/20 h-4"
                     }`}
                     style={{
                       animationDelay: `${i * 0.1}s`,
@@ -400,11 +459,33 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
               </div>
             )}
 
-            <div className="flex gap-2 pt-4">
+            {/* Push to Talk Controls */}
+            <div className="space-y-3 pt-4">
+              <Button
+                onMouseDown={handleSpeakStart}
+                onMouseUp={handleSpeakEnd}
+                onTouchStart={handleSpeakStart}
+                onTouchEnd={handleSpeakEnd}
+                disabled={isAISpeaking}
+                className={`w-full py-8 text-lg font-semibold rounded-full transition-all duration-200 ${
+                  isHoldingToSpeak
+                    ? "bg-red-500 hover:bg-red-600 text-white scale-95"
+                    : isAISpeaking
+                      ? "bg-white/10 text-white/40 cursor-not-allowed"
+                      : "bg-white hover:bg-white/90 text-black"
+                }`}
+              >
+                {isAISpeaking
+                  ? "🔇 AI is Speaking..."
+                  : isHoldingToSpeak
+                    ? "🎤 Recording..."
+                    : "🎤 Hold to Speak"}
+              </Button>
+              
               <Button
                 onClick={handleClose}
                 variant="outline"
-                className="flex-1 border-white/20 text-white hover:bg-white/10"
+                className="w-full border-white/20 text-white hover:bg-white/10"
               >
                 End Call
               </Button>
