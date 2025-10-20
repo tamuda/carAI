@@ -156,7 +156,8 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
             analyser.getByteFrequencyData(dataArray);
             const average =
               dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-            setIsAISpeaking(average > 10);
+            // Higher threshold for cleaner detection
+            setIsAISpeaking(average > 20);
             requestAnimationFrame(detectAIVoice);
           };
           detectAIVoice();
@@ -178,17 +179,18 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
       const audioContext = new AudioContext();
       const analyser = audioContext.createAnalyser();
       const microphone = audioContext.createMediaStreamSource(stream);
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.smoothingTimeConstant = 0.9; // Higher smoothing (0.9 instead of 0.8) for premium feel
       analyser.fftSize = 1024;
       microphone.connect(analyser);
       userAnalyzerRef.current = analyser;
 
-      // Detect when user is speaking
+      // Detect when user is speaking (higher threshold, less sensitive)
       const detectUserVoice = () => {
         const array = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(array);
         const average = array.reduce((a, b) => a + b, 0) / array.length;
-        setIsUserSpeaking(average > 15);
+        // Higher threshold (30 instead of 15) to ignore background noise
+        setIsUserSpeaking(average > 30);
         requestAnimationFrame(detectUserVoice);
       };
       detectUserVoice();
@@ -349,8 +351,18 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
           {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90 px-8">
               <div className="glass-card-premium rounded-3xl p-8 max-w-md text-center">
-                <svg className="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg
+                  className="w-16 h-16 text-red-400 mx-auto mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
                 <h3 className="text-xl font-semibold text-white mb-3">
                   Connection Error
@@ -428,8 +440,18 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       onClick={() => setShowTranscript(false)}
                       className="glass-card-premium px-4 py-2 rounded-full hover:bg-white/10 transition-all flex items-center gap-2"
                     >
-                      <svg className="w-4 h-4 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <svg
+                        className="w-4 h-4 text-white/80"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                       <span className="text-sm text-white/80">Hide</span>
                     </button>
@@ -481,7 +503,10 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                     >
                       <div className="glass-card-premium rounded-2xl px-6 py-4 backdrop-blur-2xl">
                         <p className="text-white text-center leading-relaxed font-medium">
-                          {transcript[transcript.length - 1]?.replace("AI: ", "")}
+                          {transcript[transcript.length - 1]?.replace(
+                            "AI: ",
+                            ""
+                          )}
                         </p>
                       </div>
                     </motion.div>
@@ -497,40 +522,69 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       onClick={() => setShowTranscript(true)}
                       className="w-full glass-card-premium px-4 py-3 rounded-full hover:bg-white/10 transition-all flex items-center justify-center gap-2 mb-4"
                     >
-                      <svg className="w-4 h-4 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                      <svg
+                        className="w-4 h-4 text-white/80"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                        />
                       </svg>
-                      <span className="text-sm text-white/80 font-medium">View Conversation</span>
+                      <span className="text-sm text-white/80 font-medium">
+                        View Conversation
+                      </span>
                     </button>
                   )}
 
-                  {/* Voice Activity Bars */}
+                  {/* Voice Activity Bars - Smooth & Premium */}
                   {(isHoldingToSpeak || isAISpeaking) && (
-                    <div className="flex items-center justify-center gap-2 h-16">
+                    <motion.div 
+                      className="flex items-center justify-center gap-2 h-20 mb-2"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                    >
                       {[...Array(7)].map((_, i) => (
                         <motion.div
                           key={i}
-                          className={`w-2 rounded-full ${
+                          className={`w-1.5 rounded-full transition-colors duration-300 ${
                             isHoldingToSpeak && isUserSpeaking
                               ? "bg-white"
                               : isAISpeaking
-                                ? "bg-green-400"
-                                : "bg-white/20"
+                              ? "bg-green-400"
+                              : "bg-white/20"
                           }`}
                           animate={{
                             height:
-                              (isHoldingToSpeak && isUserSpeaking) || isAISpeaking
-                                ? `${Math.random() * 48 + 16}px`
-                                : "16px",
+                              (isHoldingToSpeak && isUserSpeaking) ||
+                              isAISpeaking
+                                ? [
+                                    "12px",
+                                    `${16 + i * 4}px`,
+                                    "12px",
+                                    `${20 + (6 - i) * 3}px`,
+                                    "12px",
+                                  ]
+                                : "12px",
                           }}
                           transition={{
-                            duration: 0.15,
-                            repeat: (isHoldingToSpeak && isUserSpeaking) || isAISpeaking ? Infinity : 0,
+                            duration: 1.2,
+                            repeat:
+                              (isHoldingToSpeak && isUserSpeaking) ||
+                              isAISpeaking
+                                ? Infinity
+                                : 0,
                             ease: "easeInOut",
+                            delay: i * 0.08,
                           }}
                         />
                       ))}
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Push to Talk Button - Premium */}
@@ -545,8 +599,8 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       isHoldingToSpeak
                         ? "bg-white text-black scale-[0.98]"
                         : isAISpeaking
-                          ? "bg-white/10 text-white/40 cursor-not-allowed"
-                          : "bg-white text-black hover:scale-[1.02] active:scale-[0.98]"
+                        ? "bg-white/10 text-white/40 cursor-not-allowed"
+                        : "bg-white text-black hover:scale-[1.02] active:scale-[0.98]"
                     }`}
                   >
                     {/* Microphone Icon */}
@@ -570,8 +624,8 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       {isAISpeaking
                         ? "AI is speaking"
                         : isHoldingToSpeak
-                          ? "Listening"
-                          : "Hold to Speak"}
+                        ? "Listening"
+                        : "Hold to Speak"}
                     </span>
                   </button>
 

@@ -69,16 +69,20 @@ export default function SplashScreen({ onContinue }: SplashScreenProps) {
       </motion.p>
 
       <motion.div
+        className="absolute bottom-12 left-1/2 transform -translate-x-1/2"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        <Button
+        <button
           onClick={onContinue}
-          className="glass-card border-white/20 hover:bg-white/10 text-white font-semibold px-8 py-3 text-lg"
+          className="group relative px-12 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full hover:bg-white/10 hover:border-white/20 transition-all duration-500 ease-out"
         >
-          Start
-        </Button>
+          <span className="text-white/90 font-medium text-lg tracking-wide">
+            Start
+          </span>
+          <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </button>
       </motion.div>
     </div>
   );
