@@ -10,136 +10,249 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface Message {
-  role: "ai" | "user";
-  content: string;
-  timestamp: number;
-}
-
 interface AIVideoCallProps {
   issueName: string;
   onClose: () => void;
 }
 
+const MECHANIC_INSTRUCTIONS = `You are an expert car mechanic providing live video assistance to help fix a car issue.
+
+CURRENT ISSUE: High coolant temperature (105°C - should be 85-95°C)
+
+Your job is to:
+1. Guide the user step-by-step through checking and refilling coolant
+2. Pretend you can "see" through their camera (they're pointing it at the engine)
+3. Give clear, simple instructions one step at a time
+4. Ask them to confirm each step before moving to the next
+5. Use car mechanic language but explain technical terms simply
+6. Be encouraging and patient
+
+REPAIR STEPS TO GUIDE THEM THROUGH:
+1. Verify engine is cool (wait 30 min if not)
+2. Locate coolant reservoir (translucent tank near radiator)
+3. Check fluid level (should have MIN/MAX markings)
+4. Test for pressure (gently squeeze tank)
+5. Open cap carefully when no pressure
+6. Inspect coolant condition (check for rust/oil)
+7. Add 50/50 coolant mix to MAX line
+8. Replace cap and start engine
+9. Monitor temperature (should stabilize at 90-95°C)
+10. Check for leaks
+
+IMPORTANT RULES:
+- Speak naturally like you're on a phone call
+- Keep responses SHORT - 1-2 sentences max per response
+- Ask ONE question at a time
+- Wait for their response before next instruction
+- If they sound unsure, reassure them
+- Safety first - always emphasize waiting for engine to cool
+- Act like you're looking through the camera: "I can see...", "Point the camera closer to..."
+
+Start by greeting them and asking if the engine is cool to touch.`;
+
 export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [isConnecting, setIsConnecting] = useState(true);
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [transcript, setTranscript] = useState<string[]>([]);
+  const [error, setError] = useState<string>("");
   
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  // Simulated AI guidance steps for fixing coolant issue
-  const guidanceSteps = [
-    {
-      trigger: "start",
-      ai: "Hi! I can see your engine bay through the camera. I'll help you check the coolant issue. First, make sure the engine is completely cool - it should be off for at least 30 minutes. Is it cool to touch?",
-    },
-    {
-      trigger: "yes",
-      ai: "Great! Now, point your camera at the engine bay. I need to see the coolant reservoir - it's usually a translucent plastic tank near the radiator. Can you find it?",
-    },
-    {
-      trigger: "found",
-      ai: "Perfect! I can see it. Now check the level - there should be MIN and MAX markings on the side. Point the camera closer so I can see the fluid level. Is it below the MIN line?",
-    },
-    {
-      trigger: "low",
-      ai: "I can see it's low. We need to add coolant. Before opening it, press on the tank - does it feel firm or can you squeeze it? This tells us if there's still pressure.",
-    },
-    {
-      trigger: "soft",
-      ai: "Good, no pressure. Now carefully unscrew the cap counter-clockwise. Show me the opening - I need to check if the coolant looks clean or if there's rust or oil in it.",
-    },
-    {
-      trigger: "clean",
-      ai: "Excellent! The coolant looks good - no contamination. Now slowly pour in the 50/50 coolant mix until it reaches the MAX line. Pour slowly and show me as you fill it.",
-    },
-    {
-      trigger: "filled",
-      ai: "Perfect! I can see it's at the right level now. Screw the cap back on tightly. Now start your engine and let it idle for 2 minutes while I monitor the temperature through your OBD sensor.",
-    },
-    {
-      trigger: "running",
-      ai: "Great! Temperature is stabilizing at 92°C - that's perfect! The issue is resolved. Make sure to check the level again tomorrow to see if it drops - that would indicate a leak. You're all set! 🎉",
-    },
-  ];
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
+  const userAnalyzerRef = useRef<AnalyserNode | null>(null);
+  const aiAnalyzerRef = useRef<AnalyserNode | null>(null);
 
   useEffect(() => {
-    // Enable camera
-    const enableCamera = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" }, // Use back camera on mobile
-          audio: true,
-        });
-        setCameraStream(stream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        
-        // Simulate connection delay
-        setTimeout(() => {
-          setIsConnecting(false);
-          simulateAIResponse("start");
-        }, 2000);
-      } catch (error) {
-        console.error("Camera access error:", error);
-        setIsConnecting(false);
-      }
-    };
-
-    enableCamera();
+    startVoiceSession();
 
     return () => {
-      // Cleanup camera stream
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((track) => track.stop());
-      }
+      cleanup();
     };
   }, []);
 
-  const simulateAIResponse = (trigger: string) => {
-    const step = guidanceSteps.find((s) => s.trigger === trigger);
-    if (step) {
-      setIsSpeaking(true);
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { role: "ai", content: step.ai, timestamp: Date.now() },
-        ]);
-        setIsSpeaking(false);
-        setCurrentStep((prev) => prev + 1);
-      }, 1500); // Simulate AI thinking time
-    }
-  };
-
-  const quickResponses = [
-    { label: "Yes, it's cool", trigger: "yes", step: 0 },
-    { label: "Found the reservoir", trigger: "found", step: 1 },
-    { label: "Below MIN line", trigger: "low", step: 2 },
-    { label: "Feels soft, no pressure", trigger: "soft", step: 3 },
-    { label: "Coolant looks clean", trigger: "clean", step: 4 },
-    { label: "Filled to MAX", trigger: "filled", step: 5 },
-    { label: "Engine running", trigger: "running", step: 6 },
-  ];
-
-  const handleQuickResponse = (trigger: string, label: string) => {
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: label, timestamp: Date.now() },
-    ]);
-    simulateAIResponse(trigger);
-  };
-
-  const handleClose = () => {
+  const cleanup = () => {
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
     }
+    if (dataChannelRef.current) {
+      dataChannelRef.current.close();
+    }
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+    }
+  };
+
+  const startVoiceSession = async () => {
+    try {
+      setIsConnecting(true);
+
+      // Get OpenAI Realtime session
+      const sessionResponse = await fetch("/api/openai-session");
+      if (!sessionResponse.ok) {
+        throw new Error("Failed to get OpenAI session");
+      }
+      const session = await sessionResponse.json();
+      const sessionToken = session.client_secret.value;
+
+      // Create WebRTC peer connection
+      const pc = new RTCPeerConnection();
+      peerConnectionRef.current = pc;
+
+      // Set up audio element for AI voice
+      if (!audioElementRef.current) {
+        audioElementRef.current = document.createElement("audio");
+      }
+      audioElementRef.current.autoplay = true;
+
+      // Handle incoming audio from AI
+      pc.ontrack = (event) => {
+        if (audioElementRef.current) {
+          audioElementRef.current.srcObject = event.streams[0];
+
+          // Set up AI voice activity detection
+          const audioCtx = new AudioContext();
+          const aiSource = audioCtx.createMediaStreamSource(event.streams[0]);
+          const analyser = audioCtx.createAnalyser();
+          aiSource.connect(analyser);
+          analyser.fftSize = 256;
+          aiAnalyzerRef.current = analyser;
+
+          const detectAIVoice = () => {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            setIsAISpeaking(average > 10);
+            requestAnimationFrame(detectAIVoice);
+          };
+          detectAIVoice();
+        }
+      };
+
+      // Get user microphone and camera
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: { facingMode: "environment" }, // Back camera
+      });
+
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      // Set up user voice activity detection
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
+      analyser.smoothingTimeConstant = 0.8;
+      analyser.fftSize = 1024;
+      microphone.connect(analyser);
+      userAnalyzerRef.current = analyser;
+
+      // Detect when user is speaking
+      const detectUserVoice = () => {
+        const array = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(array);
+        const average = array.reduce((a, b) => a + b, 0) / array.length;
+        setIsUserSpeaking(average > 15);
+        requestAnimationFrame(detectUserVoice);
+      };
+      detectUserVoice();
+
+      // Add audio track to peer connection
+      const audioTrack = stream.getAudioTracks()[0];
+      pc.addTrack(audioTrack, stream);
+
+      // Create data channel for events
+      const dc = pc.createDataChannel("oai-events");
+      dataChannelRef.current = dc;
+
+      dc.onopen = () => {
+        console.log("Data channel opened");
+        // Send initial instructions
+        dc.send(
+          JSON.stringify({
+            type: "session.update",
+            session: {
+              instructions: MECHANIC_INSTRUCTIONS,
+              voice: "sage",
+              turn_detection: {
+                type: "server_vad",
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 500,
+              },
+            },
+          })
+        );
+      };
+
+      dc.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          
+          // Handle transcript updates
+          if (message.type === "conversation.item.input_audio_transcription.completed") {
+            setTranscript((prev) => [
+              ...prev,
+              `You: ${message.transcript}`,
+            ]);
+          }
+          
+          if (message.type === "response.done") {
+            const text = message.response?.output?.[0]?.content?.[0]?.transcript;
+            if (text) {
+              setTranscript((prev) => [
+                ...prev,
+                `AI Mechanic: ${text}`,
+              ]);
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing data channel message:", error);
+        }
+      };
+
+      // Create and set offer
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      // Send offer to OpenAI
+      const sdpResponse = await fetch(
+        `https://api.openai.com/v1/realtime?model=gpt-4o-mini-realtime-preview-2024-12-17`,
+        {
+          method: "POST",
+          body: offer.sdp,
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+            "Content-Type": "application/sdp",
+          },
+        }
+      );
+
+      if (!sdpResponse.ok) {
+        throw new Error("Failed to get SDP answer from OpenAI");
+      }
+
+      const answer: RTCSessionDescriptionInit = {
+        type: "answer",
+        sdp: await sdpResponse.text(),
+      };
+      await pc.setRemoteDescription(answer);
+
+      setIsConnecting(false);
+    } catch (error: any) {
+      console.error("Error starting voice session:", error);
+      setError(error.message);
+      setIsConnecting(false);
+    }
+  };
+
+  const handleClose = () => {
+    cleanup();
     setIsOpen(false);
     onClose();
   };
@@ -168,152 +281,137 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
               </div>
             )}
 
-            {/* AI Status Indicator */}
-            {!isConnecting && (
+            {/* Error Message */}
+            {error && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                <div className="glass-card-premium rounded-2xl p-6 max-w-md text-center">
+                  <p className="text-red-400 mb-4">{error}</p>
+                  <p className="text-sm text-white/60 mb-4">
+                    Make sure you've added your OpenAI API key to .env.local
+                  </p>
+                  <Button onClick={handleClose} className="bg-white text-black">
+                    Close
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* AI Speaking Indicator */}
+            {!isConnecting && !error && (
               <div className="absolute top-4 left-4 glass-card-premium px-4 py-2 rounded-full flex items-center gap-2">
                 <div
                   className={`w-3 h-3 rounded-full ${
-                    isSpeaking ? "bg-green-400" : "bg-white/40"
+                    isAISpeaking ? "bg-green-400" : "bg-white/40"
                   }`}
                   style={{
-                    animation: isSpeaking ? "pulse-subtle 1s ease-in-out infinite" : "none",
+                    animation: isAISpeaking ? "pulse-subtle 0.5s ease-in-out infinite" : "none",
                   }}
                 />
                 <span className="text-sm text-white font-medium">
-                  {isSpeaking ? "AI Speaking..." : "AI Ready"}
+                  {isAISpeaking ? "AI Speaking..." : "AI Listening"}
                 </span>
               </div>
             )}
 
-            {/* Microphone Indicator */}
-            {!isConnecting && (
+            {/* User Microphone Indicator */}
+            {!isConnecting && !error && (
               <div className="absolute top-4 right-4 glass-card-premium px-4 py-2 rounded-full flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-sm text-white font-medium">Recording</span>
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    isUserSpeaking ? "bg-red-500" : "bg-white/40"
+                  }`}
+                  style={{
+                    animation: isUserSpeaking ? "pulse-subtle 0.5s ease-in-out infinite" : "none",
+                  }}
+                />
+                <span className="text-sm text-white font-medium">
+                  {isUserSpeaking ? "You're Speaking" : "Microphone On"}
+                </span>
               </div>
             )}
+
+            {/* Issue Badge */}
+            <div className="absolute bottom-4 left-4 glass-card-premium px-4 py-2 rounded-2xl">
+              <p className="text-xs text-white/50 mb-1">Fixing:</p>
+              <p className="text-sm text-white font-semibold">{issueName}</p>
+            </div>
           </div>
 
-          {/* Chat Interface */}
-          <div className="p-6 max-h-80 overflow-y-auto space-y-4">
+          {/* Transcript */}
+          <div className="p-6 max-h-64 overflow-y-auto space-y-3 bg-black/20">
             <DialogHeader className="mb-4">
-              <DialogTitle className="text-2xl">AI Video Assistance</DialogTitle>
-              <p className="text-sm text-white/60">
-                Fixing: {issueName}
+              <DialogTitle className="text-xl">Live Conversation</DialogTitle>
+              <p className="text-xs text-white/60">
+                Speak naturally - the AI can hear you
               </p>
             </DialogHeader>
 
-            {/* Messages */}
-            <div className="space-y-3">
+            {transcript.length === 0 && !isConnecting && !error && (
+              <p className="text-sm text-white/50 italic text-center py-4">
+                Start talking to the AI mechanic...
+              </p>
+            )}
+
+            <div className="space-y-2">
               <AnimatePresence>
-                {messages.map((message, index) => (
+                {transcript.map((message, index) => (
                   <motion.div
                     key={index}
                     initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -10, opacity: 0 }}
-                    className={`flex gap-3 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
+                    className={`text-sm ${
+                      message.startsWith("You:")
+                        ? "text-white/80"
+                        : "text-green-400"
                     }`}
                   >
-                    {message.role === "ai" && (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-sm flex-shrink-0">
-                        🤖
-                      </div>
-                    )}
-                    <div
-                      className={`rounded-2xl px-4 py-3 max-w-[80%] ${
-                        message.role === "ai"
-                          ? "glass-card-premium border border-white/10"
-                          : "bg-white/10"
-                      }`}
-                    >
-                      <p className="text-sm text-white/90 leading-relaxed">
-                        {message.content}
-                      </p>
-                    </div>
-                    {message.role === "user" && (
-                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm flex-shrink-0">
-                        👤
-                      </div>
-                    )}
+                    {message}
                   </motion.div>
                 ))}
               </AnimatePresence>
-
-              {isSpeaking && (
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  className="flex gap-3"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-sm">
-                    🤖
-                  </div>
-                  <div className="glass-card-premium border border-white/10 rounded-2xl px-4 py-3">
-                    <div className="flex gap-1">
-                      <div
-                        className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
             </div>
 
-            {/* Quick Response Buttons */}
-            {!isConnecting && !isSpeaking && currentStep < guidanceSteps.length && (
-              <div className="flex flex-wrap gap-2 pt-4">
-                {quickResponses
-                  .filter((r) => r.step === currentStep)
-                  .map((response) => (
-                    <Button
-                      key={response.trigger}
-                      onClick={() => handleQuickResponse(response.trigger, response.label)}
-                      className="bg-white/10 hover:bg-white/20 text-white border border-white/20 text-sm"
-                      size="sm"
-                    >
-                      {response.label}
-                    </Button>
-                  ))}
+            {/* Voice Activity Visualization */}
+            {!isConnecting && !error && (
+              <div className="flex items-center justify-center gap-1 py-4">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 rounded-full transition-all duration-150 ${
+                      isUserSpeaking
+                        ? "bg-red-400 h-8"
+                        : isAISpeaking
+                          ? "bg-green-400 h-8"
+                          : "bg-white/20 h-4"
+                    }`}
+                    style={{
+                      animationDelay: `${i * 0.1}s`,
+                      animation:
+                        isUserSpeaking || isAISpeaking
+                          ? "pulse-subtle 0.5s ease-in-out infinite"
+                          : "none",
+                      height:
+                        isUserSpeaking || isAISpeaking
+                          ? `${Math.random() * 20 + 20}px`
+                          : "16px",
+                    }}
+                  />
+                ))}
               </div>
             )}
 
-            {/* Completion */}
-            {currentStep >= guidanceSteps.length && (
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="glass-card-premium rounded-2xl p-6 text-center"
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={handleClose}
+                variant="outline"
+                className="flex-1 border-white/20 text-white hover:bg-white/10"
               >
-                <div className="text-5xl mb-3">✅</div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Issue Resolved!
-                </h3>
-                <p className="text-sm text-white/60 mb-4">
-                  Your coolant level is now optimal. Temperature is stable at 92°C.
-                </p>
-                <Button
-                  onClick={handleClose}
-                  className="bg-white hover:bg-white/90 text-black font-semibold"
-                >
-                  End Call
-                </Button>
-              </motion.div>
-            )}
+                End Call
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-

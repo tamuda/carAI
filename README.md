@@ -5,7 +5,15 @@ A premium, Apple-inspired car diagnostics application with OBD-II integration, b
 ## 🚀 Features
 
 - **Real-time Dashboard** - Monitor vehicle metrics with glassmorphic cards
+- **Interactive Metric Cards** - Click any metric to learn what it means (RPM, Coolant, etc.)
 - **AI Diagnostics** - Natural language insights for car issues
+- **AI Video Mechanic** 🎥 - **REAL voice calls with AI using OpenAI Realtime API!**
+  - Turn on your camera and mic
+  - AI mechanic sees through your camera
+  - Real-time voice conversation
+  - Step-by-step repair guidance
+  - Live transcription of conversation
+- **Interactive Full Scan** - 6-step diagnostic scan with live instructions
 - **Predictive Insights** - Forecast future maintenance needs
 - **Multi-Step Loader** - Beautiful Aceternity-inspired connection flow
 - **Apple-Inspired Design** - Premium glassmorphism with smooth animations
@@ -34,11 +42,29 @@ A premium, Apple-inspired car diagnostics application with OBD-II integration, b
 # Install dependencies
 npm install --legacy-peer-deps
 
+# Set up environment variables
+# Create a .env.local file in the root directory and add:
+# OPENAI_API_KEY=sk-proj-your-key-here
+
+# Get your OpenAI API key from: https://platform.openai.com/api-keys
+
 # Run development server
 npm run dev
 ```
 
 Open [http://localhost:3001](http://localhost:3001) in your browser.
+
+### 🔑 OpenAI API Key Setup
+
+The AI Video Mechanic feature requires an OpenAI API key with access to the Realtime API:
+
+1. Go to [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+2. Create a new API key
+3. Create a `.env.local` file in the root directory
+4. Add: `OPENAI_API_KEY=sk-proj-your-key-here`
+5. Restart the dev server
+
+**Note:** The Realtime API is currently in beta and requires GPT-4 API access.
 
 ## 🏗️ Project Structure
 

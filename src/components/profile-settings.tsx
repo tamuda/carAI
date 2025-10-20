@@ -27,23 +27,14 @@ export default function ProfileSettings() {
       >
         <Card className="glass-card-premium border-white/10 p-6 mb-6">
           {/* Vehicle image */}
-          <div className="relative w-full h-40 bg-linear-to-br from-white/10 to-white/5 rounded-2xl mb-6 overflow-hidden">
-            <div
-              className="absolute inset-0"
-              style={{
-                mask: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
-                WebkitMask:
-                  "radial-gradient(ellipse at center, black 40%, transparent 80%)",
-              }}
-            >
-              <Image
-                src="/cx 30 side red.png"
-                alt="Mazda CX-30"
-                fill
-                className="object-contain scale-110"
-                priority
-              />
-            </div>
+          <div className="relative w-full h-48 rounded-2xl mb-6 overflow-hidden bg-black/20">
+            <Image
+              src="/cx 30 side red.png"
+              alt="Mazda CX-30"
+              fill
+              className="object-cover grayscale"
+              priority
+            />
           </div>
 
           {/* Vehicle info */}
@@ -51,7 +42,7 @@ export default function ProfileSettings() {
             <div>
               <p className="text-xs text-white/50 mb-1">Vehicle</p>
               <p className="font-semibold text-lg text-white">
-                2022 Tesla Model 3
+                2023 Mazda CX-30 Turbo
               </p>
             </div>
             <div>
