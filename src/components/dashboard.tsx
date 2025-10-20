@@ -27,7 +27,9 @@ interface MetricData {
 export default function Dashboard() {
   const [selectedMetric, setSelectedMetric] = useState<MetricData | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const [aiMessages, setAiMessages] = useState<Array<{ role: "user" | "ai"; content: string }>>([]);
+  const [aiMessages, setAiMessages] = useState<
+    Array<{ role: "user" | "ai"; content: string }>
+  >([]);
 
   const metrics: MetricData[] = [
     {
@@ -36,7 +38,8 @@ export default function Dashboard() {
       unit: "rpm",
       status: "normal",
       trend: "+2.3%",
-      explanation: "RPM stands for Revolutions Per Minute. It measures how fast your engine is spinning.",
+      explanation:
+        "RPM stands for Revolutions Per Minute. It measures how fast your engine is spinning.",
       normalRange: "800-3,000 RPM (while driving)",
       why: "Your engine has pistons that go up and down. RPM tells you how many times they complete a full cycle in one minute. Higher RPM means your engine is working harder - like how you breathe faster when running vs. walking.",
     },
@@ -46,10 +49,12 @@ export default function Dashboard() {
       unit: "°C",
       status: "critical",
       trend: "⚠️ High",
-      explanation: "Engine coolant temperature shows how hot the liquid cooling your engine is.",
+      explanation:
+        "Engine coolant temperature shows how hot the liquid cooling your engine is.",
       normalRange: "85-95°C (normal operating temp)",
       why: "Your engine gets VERY hot when running (like an oven!). Coolant is a special liquid that flows through the engine to keep it cool, like how sweating cools you down. If it's too hot, your engine could be damaged.",
-      problem: "Your coolant temperature is 105°C - higher than the normal 85-95°C range. This could cause engine damage if not addressed.",
+      problem:
+        "Your coolant temperature is 105°C - higher than the normal 85-95°C range. This could cause engine damage if not addressed.",
       aiSolution: [
         "Pull over safely and turn off the engine to prevent damage",
         "Wait 30 minutes for the engine to cool down completely",
@@ -65,7 +70,8 @@ export default function Dashboard() {
       unit: "V",
       status: "normal",
       trend: "+0.2V",
-      explanation: "Battery voltage shows how much electrical charge your car battery has.",
+      explanation:
+        "Battery voltage shows how much electrical charge your car battery has.",
       normalRange: "12.4-12.8V (engine off), 13.7-14.7V (running)",
       why: "Your car battery is like a rechargeable phone battery. It provides electricity to start the car and power lights, radio, etc. The alternator (like a charger) keeps it charged while driving. 12.8V means it's fully charged!",
     },
@@ -75,7 +81,8 @@ export default function Dashboard() {
       unit: "V",
       status: "normal",
       trend: "Optimal",
-      explanation: "System voltage shows if your alternator is charging the battery properly.",
+      explanation:
+        "System voltage shows if your alternator is charging the battery properly.",
       normalRange: "13.7-14.7V (while engine is running)",
       why: "This measures the electricity your alternator is producing while the engine runs. Think of the alternator as a generator that turns engine power into electricity to charge your battery and run all electrical systems. 14.2V is perfect!",
     },
@@ -86,7 +93,11 @@ export default function Dashboard() {
     setAiMessages([
       {
         role: "ai",
-        content: `I've detected that your ${metric.label} is ${metric.status === "critical" ? "critically high" : "showing unusual readings"}. Let me help you understand and fix this issue.`,
+        content: `I've detected that your ${metric.label} is ${
+          metric.status === "critical"
+            ? "critically high"
+            : "showing unusual readings"
+        }. Let me help you understand and fix this issue.`,
       },
       {
         role: "ai",
@@ -106,7 +117,11 @@ export default function Dashboard() {
         },
         {
           role: "ai",
-          content: "Here's a step-by-step solution:\n\n" + metric.aiSolution.map((step, i) => `${i + 1}. ${step}`).join("\n\n"),
+          content:
+            "Here's a step-by-step solution:\n\n" +
+            metric.aiSolution
+              .map((step, i) => `${i + 1}. ${step}`)
+              .join("\n\n"),
         },
       ]);
     }
@@ -175,6 +190,47 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
+      <motion.div
+        className="mb-12 relative"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div
+          className="glass-card rounded-[2rem] p-20 flex items-center justify-center relative overflow-hidden"
+          style={{ minHeight: "320px" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent" />
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            {[0, 0.8, 1.6, 2.4].map((delay) => (
+              <div
+                key={delay}
+                className="absolute w-40 h-40 rounded-full border border-white/10"
+                style={{
+                  animation: `radar-wave 5s ease-out infinite`,
+                  animationDelay: `${delay}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="relative">
+            <div
+              className="absolute inset-0 bg-white/10 blur-[60px] rounded-full"
+              style={{ animation: "pulse-subtle 4s ease-in-out infinite" }}
+            />
+            <svg
+              className="relative w-64 h-64 text-white/70"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+            </svg>
+          </div>
+        </div>
+      </motion.div>
+
       <div className="grid grid-cols-2 gap-5 mb-12">
         {metrics.map((metric, index) => (
           <motion.div
@@ -197,7 +253,9 @@ export default function Dashboard() {
             <div className="flex items-baseline gap-2 mb-4">
               <span
                 className={`text-4xl font-bold tracking-tight ${
-                  metric.status === "critical" ? "text-yellow-400" : "text-white"
+                  metric.status === "critical"
+                    ? "text-yellow-400"
+                    : "text-white"
                 }`}
                 style={{ letterSpacing: "-0.02em" }}
               >
@@ -238,7 +296,9 @@ export default function Dashboard() {
             </div>
             {metric.status === "critical" && (
               <div className="mt-4 pt-4 border-t border-white/10">
-                <p className="text-xs text-yellow-400/80">Tap for AI assistance</p>
+                <p className="text-xs text-yellow-400/80">
+                  Tap for AI assistance
+                </p>
               </div>
             )}
           </motion.div>
@@ -252,7 +312,9 @@ export default function Dashboard() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{selectedMetric?.label}</DialogTitle>
+            <DialogTitle className="text-2xl">
+              {selectedMetric?.label}
+            </DialogTitle>
             <DialogDescription>
               Currently: {selectedMetric?.value} {selectedMetric?.unit}
             </DialogDescription>
@@ -272,7 +334,9 @@ export default function Dashboard() {
               <h3 className="text-sm font-semibold text-white/80 mb-2">
                 Normal Range
               </h3>
-              <p className="text-sm text-white/70">{selectedMetric?.normalRange}</p>
+              <p className="text-sm text-white/70">
+                {selectedMetric?.normalRange}
+              </p>
             </div>
 
             <div className="glass-card rounded-2xl p-4">
@@ -305,7 +369,9 @@ export default function Dashboard() {
       <Dialog open={showAIAssistant} onOpenChange={setShowAIAssistant}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">AI Diagnostic Assistant</DialogTitle>
+            <DialogTitle className="text-2xl">
+              AI Diagnostic Assistant
+            </DialogTitle>
             <DialogDescription>
               Let me help you fix your car's issue
             </DialogDescription>
