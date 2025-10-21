@@ -285,14 +285,22 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     }
   };
 
-  const handleSpeakStart = () => {
-    if (audioTrackRef.current) {
+  const handleSpeakStart = (e?: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (audioTrackRef.current && !isAISpeaking) {
       audioTrackRef.current.enabled = true;
       setIsHoldingToSpeak(true);
     }
   };
 
-  const handleSpeakEnd = () => {
+  const handleSpeakEnd = (e?: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (audioTrackRef.current) {
       audioTrackRef.current.enabled = false;
       setIsHoldingToSpeak(false);
@@ -589,13 +597,19 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
                   {/* Push to Talk Button - Premium */}
                   <button
-                    onMouseDown={handleSpeakStart}
-                    onMouseUp={handleSpeakEnd}
-                    onMouseLeave={handleSpeakEnd}
-                    onTouchStart={handleSpeakStart}
-                    onTouchEnd={handleSpeakEnd}
+                    onPointerDown={handleSpeakStart}
+                    onPointerUp={handleSpeakEnd}
+                    onPointerLeave={handleSpeakEnd}
+                    onPointerCancel={handleSpeakEnd}
+                    onContextMenu={(e) => e.preventDefault()}
                     disabled={isAISpeaking}
-                    className={`w-full py-7 rounded-full font-semibold text-base transition-all duration-200 shadow-2xl flex items-center justify-center gap-3 ${
+                    style={{
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                      touchAction: 'none'
+                    }}
+                    className={`w-full py-7 rounded-full font-semibold text-base transition-all duration-200 shadow-2xl flex items-center justify-center gap-3 select-none ${
                       isHoldingToSpeak
                         ? "bg-white text-black scale-[0.98]"
                         : isAISpeaking
@@ -620,7 +634,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       />
                     </svg>
 
-                    <span>
+                    <span className="pointer-events-none select-none">
                       {isAISpeaking
                         ? "AI is speaking"
                         : isHoldingToSpeak
