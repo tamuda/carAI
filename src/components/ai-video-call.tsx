@@ -117,7 +117,7 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     if (audioTrackRef.current) {
       audioTrackRef.current.enabled = false;
     }
-    
+
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
     }
@@ -318,12 +318,12 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     // Always disable audio track when releasing
     if (audioTrackRef.current) {
       audioTrackRef.current.enabled = false;
     }
-    
+
     setIsHoldingToSpeak(false);
 
     // Only trigger AI response if we were actually holding to speak
@@ -349,22 +349,22 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent 
+      <DialogContent
         className="max-w-full max-h-screen h-screen p-0 overflow-hidden border-none [&>button]:hidden select-none"
         style={{
-          WebkitUserSelect: 'none',
-          userSelect: 'none',
-          WebkitTouchCallout: 'none'
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTouchCallout: "none",
         }}
         onContextMenu={(e) => e.preventDefault()}
       >
         {/* Full Screen Video */}
-        <div 
+        <div
           className="relative w-full h-full bg-black select-none"
           style={{
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            WebkitTouchCallout: 'none'
+            WebkitUserSelect: "none",
+            userSelect: "none",
+            WebkitTouchCallout: "none",
           }}
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -513,9 +513,9 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="absolute top-36 left-6 right-6 max-h-80 overflow-y-auto glass-card-premium rounded-3xl p-6 pointer-events-auto select-none"
                     style={{
-                      WebkitUserSelect: 'none',
-                      userSelect: 'none',
-                      WebkitTouchCallout: 'none'
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                      WebkitTouchCallout: "none",
                     }}
                     onContextMenu={(e) => e.preventDefault()}
                   >
@@ -529,9 +529,9 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                               : "text-white font-medium"
                           }`}
                           style={{
-                            WebkitUserSelect: 'none',
-                            userSelect: 'none',
-                            WebkitTouchCallout: 'none'
+                            WebkitUserSelect: "none",
+                            userSelect: "none",
+                            WebkitTouchCallout: "none",
                           }}
                           onContextMenu={(e) => e.preventDefault()}
                         >
