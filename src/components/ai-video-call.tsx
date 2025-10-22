@@ -72,12 +72,20 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     };
   }, []);
 
-  // Handle push-to-talk state
+  // Handle push-to-talk state - ensure audio is only enabled when holding
   useEffect(() => {
     if (audioTrackRef.current) {
+      // Force disable audio if not holding to speak
       audioTrackRef.current.enabled = isHoldingToSpeak;
     }
   }, [isHoldingToSpeak]);
+
+  // Force disable audio when component mounts or when AI is speaking
+  useEffect(() => {
+    if (audioTrackRef.current && (isAISpeaking || !isHoldingToSpeak)) {
+      audioTrackRef.current.enabled = false;
+    }
+  }, [isAISpeaking, isHoldingToSpeak]);
 
   // Keyboard support - spacebar to talk
   useEffect(() => {
@@ -105,6 +113,11 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
   }, [isHoldingToSpeak, isAISpeaking]);
 
   const cleanup = () => {
+    // Force disable audio track before cleanup
+    if (audioTrackRef.current) {
+      audioTrackRef.current.enabled = false;
+    }
+    
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
     }
@@ -285,7 +298,9 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     }
   };
 
-  const handleSpeakStart = (e?: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
+  const handleSpeakStart = (
+    e?: React.MouseEvent | React.TouchEvent | React.PointerEvent
+  ) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -296,28 +311,33 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
     }
   };
 
-  const handleSpeakEnd = (e?: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
+  const handleSpeakEnd = (
+    e?: React.MouseEvent | React.TouchEvent | React.PointerEvent
+  ) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
+    
+    // Always disable audio track when releasing
     if (audioTrackRef.current) {
       audioTrackRef.current.enabled = false;
-      setIsHoldingToSpeak(false);
+    }
+    
+    setIsHoldingToSpeak(false);
 
-      // Manually trigger AI response after user stops speaking
-      if (dataChannelRef.current) {
-        dataChannelRef.current.send(
-          JSON.stringify({
-            type: "input_audio_buffer.commit",
-          })
-        );
-        dataChannelRef.current.send(
-          JSON.stringify({
-            type: "response.create",
-          })
-        );
-      }
+    // Only trigger AI response if we were actually holding to speak
+    if (dataChannelRef.current) {
+      dataChannelRef.current.send(
+        JSON.stringify({
+          type: "input_audio_buffer.commit",
+        })
+      );
+      dataChannelRef.current.send(
+        JSON.stringify({
+          type: "response.create",
+        })
+      );
     }
   };
 
@@ -329,9 +349,25 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-full max-h-screen h-screen p-0 overflow-hidden border-none [&>button]:hidden">
+      <DialogContent 
+        className="max-w-full max-h-screen h-screen p-0 overflow-hidden border-none [&>button]:hidden select-none"
+        style={{
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
+          WebkitTouchCallout: 'none'
+        }}
+        onContextMenu={(e) => e.preventDefault()}
+      >
         {/* Full Screen Video */}
-        <div className="relative w-full h-full bg-black">
+        <div 
+          className="relative w-full h-full bg-black select-none"
+          style={{
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            WebkitTouchCallout: 'none'
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+        >
           <video
             ref={videoRef}
             autoPlay
@@ -475,19 +511,31 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -100, opacity: 0 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-36 left-6 right-6 max-h-80 overflow-y-auto glass-card-premium rounded-3xl p-6 pointer-events-auto"
+                    className="absolute top-36 left-6 right-6 max-h-80 overflow-y-auto glass-card-premium rounded-3xl p-6 pointer-events-auto select-none"
+                    style={{
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none'
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
                   >
                     <div className="space-y-3">
                       {transcript.map((message, index) => (
                         <div
                           key={index}
-                          className={`text-sm leading-relaxed ${
+                          className={`text-sm leading-relaxed select-none pointer-events-none ${
                             message.startsWith("You:")
                               ? "text-white/70"
                               : "text-white font-medium"
                           }`}
+                          style={{
+                            WebkitUserSelect: 'none',
+                            userSelect: 'none',
+                            WebkitTouchCallout: 'none'
+                          }}
+                          onContextMenu={(e) => e.preventDefault()}
                         >
-                          <span className="text-white/40 text-xs mr-2">
+                          <span className="text-white/40 text-xs mr-2 select-none">
                             {message.startsWith("You:") ? "YOU" : "AI"}
                           </span>
                           {message.replace("You: ", "").replace("AI: ", "")}
@@ -509,8 +557,8 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                       exit={{ y: 20, opacity: 0 }}
                       className="absolute bottom-64 left-8 right-8 pointer-events-none"
                     >
-                      <div className="glass-card-premium rounded-2xl px-6 py-4 backdrop-blur-2xl">
-                        <p className="text-white text-center leading-relaxed font-medium">
+                      <div className="glass-card-premium rounded-2xl px-6 py-4 backdrop-blur-2xl select-none">
+                        <p className="text-white text-center leading-relaxed font-medium select-none pointer-events-none">
                           {transcript[transcript.length - 1]?.replace(
                             "AI: ",
                             ""
@@ -604,10 +652,10 @@ export default function AIVideoCall({ issueName, onClose }: AIVideoCallProps) {
                     onContextMenu={(e) => e.preventDefault()}
                     disabled={isAISpeaking}
                     style={{
-                      WebkitUserSelect: 'none',
-                      userSelect: 'none',
-                      WebkitTouchCallout: 'none',
-                      touchAction: 'none'
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                      WebkitTouchCallout: "none",
+                      touchAction: "none",
                     }}
                     className={`w-full py-7 rounded-full font-semibold text-base transition-all duration-200 shadow-2xl flex items-center justify-center gap-3 select-none ${
                       isHoldingToSpeak
