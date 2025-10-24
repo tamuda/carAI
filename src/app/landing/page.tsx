@@ -5,58 +5,74 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Timeline } from "@/components/ui/timeline";
-import { 
-  Car, 
-  Brain, 
-  Camera, 
-  Shield, 
-  Zap, 
+import {
+  Car,
+  Brain,
+  Camera,
+  Shield,
+  Zap,
   Smartphone,
   ArrowRight,
-  Play
+  Play,
 } from "lucide-react";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
-        
-        {/* Background Image */}
-        <div className="absolute inset-0 opacity-20">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image - More Visible */}
+        <div className="absolute inset-0">
           <Image
             src="/hand holding phone.png"
             alt="Hand holding phone"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             priority
           />
+          <div className="absolute inset-0 bg-black/30" />
         </div>
 
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+        {/* CarOS Text - Behind/Above the phone */}
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10"
+        >
+          <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent drop-shadow-2xl">
+            CarOS
+          </h1>
+        </motion.div>
+
+        {/* Tagline and Buttons - Bottom Front */}
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <h1 className="text-7xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              CarOS
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8">
+            <p className="text-xl md:text-2xl text-white mb-8 font-medium drop-shadow-lg">
               Your car's brain in your pocket
             </p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
               className="flex gap-4 justify-center"
             >
-              <Button size="lg" className="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg">
+              <Button
+                size="lg"
+                className="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg shadow-2xl"
+              >
                 Try Demo
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg backdrop-blur-sm"
+              >
                 <Play className="mr-2 h-5 w-5" />
                 Watch
               </Button>
@@ -116,12 +132,16 @@ export default function LandingPage() {
                     </div>
                     <h3 className="text-2xl font-bold mb-4">AI Diagnostics</h3>
                     <p className="text-gray-400 text-lg leading-relaxed">
-                      Advanced machine learning analyzes your vehicle's health in real-time, 
-                      predicting issues before they become problems.
+                      Advanced machine learning analyzes your vehicle's health
+                      in real-time, predicting issues before they become
+                      problems.
                     </p>
                   </div>
                   <div className="mt-8">
-                    <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-800">
+                    <Button
+                      variant="outline"
+                      className="border-gray-600 text-white hover:bg-gray-800"
+                    >
                       Learn More
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -143,7 +163,8 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold mb-3">Live Video Support</h3>
                 <p className="text-gray-400">
-                  Connect with AI mechanics through your camera for instant guidance.
+                  Connect with AI mechanics through your camera for instant
+                  guidance.
                 </p>
               </Card>
             </motion.div>
@@ -180,9 +201,12 @@ export default function LandingPage() {
                     <Zap className="h-6 w-6 text-yellow-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold mb-2">Real-time Performance</h3>
+                    <h3 className="text-xl font-bold mb-2">
+                      Real-time Performance
+                    </h3>
                     <p className="text-gray-400">
-                      Monitor your vehicle's performance metrics and get instant insights.
+                      Monitor your vehicle's performance metrics and get instant
+                      insights.
                     </p>
                   </div>
                 </div>
@@ -210,7 +234,7 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          <Timeline 
+          <Timeline
             data={[
               {
                 title: "Connect Your Device",
@@ -218,13 +242,16 @@ export default function LandingPage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 mb-4">
                       <Smartphone className="h-6 w-6 text-blue-400" />
-                      <span className="text-lg font-semibold text-white">Step 1</span>
+                      <span className="text-lg font-semibold text-white">
+                        Step 1
+                      </span>
                     </div>
                     <p className="text-gray-400 leading-relaxed">
-                      Link your smartphone to your vehicle's diagnostic port for seamless data flow.
+                      Link your smartphone to your vehicle's diagnostic port for
+                      seamless data flow.
                     </p>
                   </div>
-                )
+                ),
               },
               {
                 title: "AI Analysis",
@@ -232,13 +259,16 @@ export default function LandingPage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 mb-4">
                       <Brain className="h-6 w-6 text-purple-400" />
-                      <span className="text-lg font-semibold text-white">Step 2</span>
+                      <span className="text-lg font-semibold text-white">
+                        Step 2
+                      </span>
                     </div>
                     <p className="text-gray-400 leading-relaxed">
-                      Our advanced AI processes real-time data to understand your car's health and performance.
+                      Our advanced AI processes real-time data to understand
+                      your car's health and performance.
                     </p>
                   </div>
-                )
+                ),
               },
               {
                 title: "Smart Insights",
@@ -246,14 +276,17 @@ export default function LandingPage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 mb-4">
                       <Car className="h-6 w-6 text-green-400" />
-                      <span className="text-lg font-semibold text-white">Step 3</span>
+                      <span className="text-lg font-semibold text-white">
+                        Step 3
+                      </span>
                     </div>
                     <p className="text-gray-400 leading-relaxed">
-                      Receive actionable insights, maintenance reminders, and predictive diagnostics.
+                      Receive actionable insights, maintenance reminders, and
+                      predictive diagnostics.
                     </p>
                   </div>
-                )
-              }
+                ),
+              },
             ]}
           />
         </div>
@@ -275,11 +308,18 @@ export default function LandingPage() {
               Experience the future of automotive intelligence today.
             </p>
             <div className="flex gap-4 justify-center">
-              <Button size="lg" className="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg">
+              <Button
+                size="lg"
+                className="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg"
+              >
                 Try Demo Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button variant="outline" size="lg" className="border-gray-600 text-white hover:bg-gray-800 px-8 py-4 text-lg">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-gray-600 text-white hover:bg-gray-800 px-8 py-4 text-lg"
+              >
                 Learn More
               </Button>
             </div>
