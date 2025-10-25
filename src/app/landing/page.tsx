@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Timeline } from "@/components/ui/timeline";
+import { WaitlistModal } from "@/components/waitlist-modal";
 import { useState, useEffect, useRef } from "react";
 import {
   Car,
@@ -104,16 +105,19 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   className="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg shadow-2xl rounded-2xl"
+                  onClick={() => (window.location.href = "/demo")}
                 >
                   Try Demo
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg backdrop-blur-sm rounded-2xl"
-                >
-                  Join Waitlist
-                </Button>
+                <WaitlistModal>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg backdrop-blur-sm rounded-2xl"
+                  >
+                    Join Waitlist
+                  </Button>
+                </WaitlistModal>
               </motion.div>
             </motion.div>
           </div>
@@ -438,16 +442,19 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg rounded-2xl shadow-2xl"
+                onClick={() => (window.location.href = "/demo")}
               >
                 Watch Demo
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg rounded-2xl backdrop-blur-sm"
-              >
-                Join Waitlist
-              </Button>
+              <WaitlistModal>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg rounded-2xl backdrop-blur-sm"
+                >
+                  Join Waitlist
+                </Button>
+              </WaitlistModal>
             </div>
           </motion.div>
         </div>
